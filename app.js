@@ -261,15 +261,20 @@
         function createPuzzlePieces(srcImage) {
             const rows = 4;
             const cols = 3;
-            
+    
             const displayRect = getImageDisplayRect();
             gameState.imageActualRect = displayRect;
-            
+    
             const pieceWidth = displayRect.width / cols;
             const pieceHeight = displayRect.height / rows;
 
             const processedCanvas = removeWhiteBackground(srcImage);
             const processedImageUrl = processedCanvas.toDataURL();
+
+    // Получаем размеры панели фрагментов
+            const fragmentsRect = fragmentsArea.getBoundingClientRect();
+            const panelWidth = fragmentsRect.width - 20; // Отступы
+            const panelHeight = fragmentsRect.height - 20;
 
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
@@ -305,11 +310,18 @@
                     };
                     pieceImg.src = processedImageUrl;
 
-                    const maxX = 250;
-                    const maxY = 300;
-                    piece.style.left = (15 + Math.random() * maxX) + 'px';
-                    piece.style.top = (15 + Math.random() * maxY) + 'px';
+            // Случайная позиция ВНУТРИ панели фрагментов
+            // Учитываем размер пазла, чтобы он не выходил за границы
+                    const maxX = Math.max(10, panelWidth - pieceWidth - 10);
+                    const maxY = Math.max(10, panelHeight - pieceHeight - 10);
+            
+                    const randomX = 10 + Math.random() * maxX;
+                    const randomY = 10 + Math.random() * maxY;
 
+                    piece.style.left = randomX + 'px';
+                    piece.style.top = randomY + 'px';
+
+            // Целевая позиция на вазе
                     const targetX = displayRect.left + (col * pieceWidth) + (pieceWidth / 2);
                     const targetY = displayRect.top + (row * pieceHeight) + (pieceHeight / 2);
 
@@ -324,7 +336,7 @@
                     gameState.pieces.push(piece);
                 }
             }
-        }
+        }       
 
         function addCeramicTexture(ctx, width, height) {
             ctx.globalCompositeOperation = 'multiply';
@@ -452,10 +464,21 @@
 
         function returnToFragments(piece) {
             fragmentsArea.appendChild(piece);
-            const maxX = 250;
-            const maxY = 300;
-            piece.style.left = (15 + Math.random() * maxX) + 'px';
-            piece.style.top = (15 + Math.random() * maxY) + 'px';
+    
+    // Получаем актуальные размеры панели
+            const fragmentsRect = fragmentsArea.getBoundingClientRect();
+            const pieceRect = piece.getBoundingClientRect();
+            const pieceWidth = pieceRect.width;
+            const pieceHeight = pieceRect.height;
+    
+            const panelWidth = fragmentsRect.width - 20;
+            const panelHeight = fragmentsRect.height - 20;
+    
+            const maxX = Math.max(10, panelWidth - pieceWidth - 10);
+            const maxY = Math.max(10, panelHeight - pieceHeight - 10);
+    
+            piece.style.left = (10 + Math.random() * maxX) + 'px';
+            piece.style.top = (10 + Math.random() * maxY) + 'px';
         }
 
         function updateUI() {
