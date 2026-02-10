@@ -1,21 +1,22 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Museum ArQuest</title>
-
+    <title>Museum ArQuest - Реставрация вазы</title>
+    
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Загрузочный экран -->
     <div id="loader" class="loader-screen">
         <div class="loader-content">
             <div class="museum-logo">
-                <img id="logo" src="assets/logo.png" alt="logo">   
+                <img class="logo" src="./assets/logo.png" alt="">
             </div>
             <h1>История в смартфоне</h1>
             <div class="loading-bar">
@@ -25,7 +26,8 @@
         </div>
     </div>
 
-    <div id="prologue" class="screen prologue-screen hidden">
+    <!-- Пролог -->
+    <div id="prologue" class="prologue-screen hidden">
         <div class="princess-hologram">
             <div class="hologram-ring"></div>
             <div class="hologram-avatar">👸</div>
@@ -34,62 +36,142 @@
         <div class="dialogue-box">
             <h2>Музейка</h2>
             <p id="prologue-text">Добро пожаловать в Добрушский районный краеведческий музей. Ты готов пройти квест? Если да, то нажми кнопку и дай разрешение на доступ к камере.</p>
-            <button class="btn-primary" onclick="startQuest()">Начать путешествие</button>
+            <button class="btn-primary" onclick="startFirstQuest()">Начать путешествие</button>
         </div>
     </div>
 
-    <div id="ar-content" class="hidden">
-    <div class="ar-content-wrapper">
-        <button class="close-btn" onclick="closeARContent()">✕</button>
-        
-        <div class="ar-content-header">
-            <h2>🎯 Метка распознана!</h2>
-            <p class="subtitle">Добрушская школа, 1909 год</p>
-        </div>
-        
-        <div class="ar-content-body">
-            <div class="content-image">
-                <img src="assets/museum.jpg" alt="Историческое фото">
-                <div class="image-caption">Здание школы в наши дни</div>
+    <!-- AR сцена для первой метки (школа) -->
+    <div id="ar-scene-school" class="ar-container hidden">
+        <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
+                 color-space="sRGB" 
+                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 vr-mode-ui="enabled: false" 
+                 device-orientation-permission-ui="enabled: false">
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+            <a-entity id="school-target" mindar-image-target="targetIndex: 0"></a-entity>
+        </a-scene>
+        <div class="scan-hint">Наведите камеру основательницу школы для детей рабочих фабрики</div>
+    </div>
+
+    <!-- AR сцена для второй метки (ваза) -->
+    <div id="ar-scene-vase" class="ar-container hidden">
+        <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
+                 color-space="sRGB" 
+                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 vr-mode-ui="enabled: false" 
+                 device-orientation-permission-ui="enabled: false">
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+            <a-entity id="vase-target" mindar-image-target="targetIndex: 1"></a-entity>
+        </a-scene>
+        <div class="scan-hint">Наведите камеру на черепкі вазы</div>
+    </div>
+
+    <!-- AR контент школы -->
+    <div id="ar-content-school" class="hidden">
+        <div class="ar-content-wrapper">
+            <button class="close-btn" onclick="closeSchoolContent()">✕</button>
+            
+            <div class="ar-content-header">
+                <h2>🎯 Метка распознана!</h2>
+                <p class="subtitle">Добрушская школа, 1909 год</p>
             </div>
             
-            <div class="content-text">
-                <h3>Историческая справка</h3>
-                <p>Школа была построена в 1909 году по инициативе княгини Ирины Паскевич. 
-                Здание выполнено в стиле модерн с элементами неоготики...</p>
-                
-                <div class="facts">
-                    <div class="fact-item">
-                        <span class="fact-icon">🏛️</span>
-                        <span>Архитектор: Иван Семёнов</span>
-                    </div>
-                    <div class="fact-item">
-                        <span class="fact-icon">👥</span>
-                        <span>Вместимость: 200 учеников</span>
-                    </div>
-                    <div class="fact-item">
-                        <span class="fact-icon">📚</span>
-                        <span>Первые предметы: чтение, письмо, арифметика</span>
-                    </div>
+            <div class="ar-content-body">
+                <div class="content-image">
+                    <img src="assets/museum.jpg" alt="Историческое фото">
+                    <div class="image-caption">Здание школы в наши дни</div>
                 </div>
                 
-                <button class="btn-primary" onclick="showNextContent()">Узнать больше</button>
+                <div class="content-text">
+                    <h3>Историческая справка</h3>
+                    <p>Школа была построена в 1909 году по инициативе княгини Ирины Паскевич. 
+                    Здание выполнено в стиле модерн с элементами неоготики...</p>
+                    
+                    <div class="facts">
+                        <div class="fact-item">
+                            <span class="fact-icon">🏛️</span>
+                            <span>Архитектор: Иван Семёнов</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">👥</span>
+                            <span>Вместимость: 200 учеников</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">📚</span>
+                            <span>Первые предметы: чтение, письмо, арифметика</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary next-quest-btn" onclick="startVaseQuest()">
+                        🏺 Найти древнюю вазу
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-    <div id="ar-scene">
-        <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="near: 10; far: 10000; objects: .clickable"></a-camera>
+    <!-- Экран игры с вазой -->
+    <div id="game-screen" class="game-screen hidden">
+        <div class="game-header">
+            <h1>Реставрация древнеславянской вазы</h1>
+            <p class="game-subtitle">Перетащите фрагменты керамики на контур вазы, чтобы восстановить исторический артефакт</p>
+        </div>
 
-      <a-entity id="example-target" mindar-image-target="targetIndex: 0">
-	<a-plane id="example-plane" class="clickable" color="blue" opaciy="0.5" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
-      </a-entity>
-    </a-scene>
+        <div class="game-container">
+            <div class="game-panel fragments-panel">
+                <h2 class="panel-title">🏺 Археологические фрагменты</h2>
+                <div class="fragments-area" id="fragmentsArea"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p style="text-align: center; margin-top: 10px; color: #d4b59e;">
+                    Собрано: <span id="piecesCount">0</span> / <span id="totalPieces">12</span>
+                </p>
+            </div>
+
+            <div class="game-panel vase-panel">
+                <h2 class="panel-title">🎯 Зона реставрации</h2>
+                <div class="vase-area" id="vaseArea">
+                    <img id="vaseImage" src="./assets/vaza.jpg" alt="Vase outline">
+                </div>
+
+                <div class="vase-info">
+                    <div class="vase-name">Славянская керамическая урна X века</div>
+                    <div class="vase-desc">Глиняная урна с геометрическим орнаментом, обнаруженная в кургане на территории Смоленской области. Датируется X веком н.э.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button class="game-btn" onclick="restartGame()">🔄 Начать заново</button>
+            <button class="game-btn" onclick="backToMuseum()">🏛️ Вернуться в музей</button>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-value" id="placedCount">0</span>
+                <span class="stat-label">Собрано фрагментов</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="timer">00:00</span>
+                <span class="stat-label">Время</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="accuracy">0%</span>
+                <span class="stat-label">Точность</span>
+            </div>
+        </div>
     </div>
-       
-     
+
+    <!-- Сообщение о победе -->
+    <div class="win-message" id="winMessage">
+        <h2>🏆 Ваза восстановлена!</h2>
+        <p>Вы успешно собрали древнеславянскую вазу. Археологический артефакт сохранен для истории!</p>
+        <p>Время: <span id="finalTime">00:00</span></p>
+        <button class="game-btn" onclick="restartGame()">Играть снова</button>
+        <button class="game-btn" onclick="backToMuseum()">Вернуться в музей</button>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
