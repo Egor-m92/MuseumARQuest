@@ -186,15 +186,33 @@
 
             const img = new Image();
             img.onload = function() {
-                const processedVaseCanvas = removeWhiteBackground(img);
-                vaseImage.src = processedVaseCanvas.toDataURL();
-                vaseImage.style.opacity = '0.3';
-                vaseImage.style.display = 'block';
-                
-                setTimeout(() => {
+        const processedVaseCanvas = removeWhiteBackground(img);
+        vaseImage.src = processedVaseCanvas.toDataURL();
+        vaseImage.style.opacity = '0.3';
+        vaseImage.style.display = 'block';
+        
+        // Используем ResizeObserver для отслеживания размеров панели
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+                    resizeObserver.disconnect();
                     createPuzzlePieces(img);
-                }, 100);
-            };
+                    break;
+                }
+            }
+        });
+        
+        resizeObserver.observe(fragmentsArea);
+        
+        // Fallback на случай если observer не сработает
+        setTimeout(() => {
+            resizeObserver.disconnect();
+            if (gameState.pieces.length === 0) {
+                createPuzzlePieces(img);
+            }
+        }, 500);
+
+    };
             img.onerror = function() {
                 const fallbackImg = new Image();
                 fallbackImg.onload = function() {
@@ -259,84 +277,89 @@
         }
 
         function createPuzzlePieces(srcImage) {
-            const rows = 4;
-            const cols = 3;
+    const rows = 4;
+    const cols = 3;
     
-            const displayRect = getImageDisplayRect();
-            gameState.imageActualRect = displayRect;
+    const displayRect = getImageDisplayRect();
+    gameState.imageActualRect = displayRect;
     
-            const pieceWidth = displayRect.width / cols;
-            const pieceHeight = displayRect.height / rows;
+    const pieceWidth = displayRect.width / cols;
+    const pieceHeight = displayRect.height / rows;
 
-            const processedCanvas = removeWhiteBackground(srcImage);
-            const processedImageUrl = processedCanvas.toDataURL();
+    const processedCanvas = removeWhiteBackground(srcImage);
+    const processedImageUrl = processedCanvas.toDataURL();
 
-    // Получаем размеры панели фрагментов
-            const fragmentsRect = fragmentsArea.getBoundingClientRect();
-            const panelWidth = fragmentsRect.width - 20; // Отступы
-            const panelHeight = fragmentsRect.height - 20;
+    // Принудительно обновляем layout
+    fragmentsArea.offsetHeight;
+    
+    // Получаем реальные размеры панели
+    const fragmentsRect = fragmentsArea.getBoundingClientRect();
+    const panelWidth = fragmentsRect.width;
+    const panelHeight = fragmentsRect.height;
 
-            for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                    const index = row * cols + col;
-                    if (index >= gameState.totalPieces) break;
+    console.log('Panel size:', panelWidth, panelHeight); // Для отладки
 
-                    const piece = document.createElement('div');
-                    piece.className = 'puzzle-piece';
-                    piece.id = `piece-${index}`;
-                    piece.style.width = pieceWidth + 'px';
-                    piece.style.height = pieceHeight + 'px';
-                    piece.dataset.index = index;
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const index = row * cols + col;
+            if (index >= gameState.totalPieces) break;
 
-                    const canvas = document.createElement('canvas');
-                    canvas.width = pieceWidth;
-                    canvas.height = pieceHeight;
-                    const ctx = canvas.getContext('2d');
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.id = `piece-${index}`;
+            piece.style.width = pieceWidth + 'px';
+            piece.style.height = pieceHeight + 'px';
+            piece.dataset.index = index;
 
-                    const pieceImg = new Image();
-                    pieceImg.onload = function() {
-                        const sx = (pieceImg.width / cols) * col;
-                        const sy = (pieceImg.height / rows) * row;
-                        const sWidth = pieceImg.width / cols;
-                        const sHeight = pieceImg.height / rows;
+            const canvas = document.createElement('canvas');
+            canvas.width = pieceWidth;
+            canvas.height = pieceHeight;
+            const ctx = canvas.getContext('2d');
 
-                        ctx.clearRect(0, 0, pieceWidth, pieceHeight);
-                        ctx.drawImage(pieceImg, sx, sy, sWidth, sHeight, 0, 0, pieceWidth, pieceHeight);
-                        addCeramicTexture(ctx, pieceWidth, pieceHeight);
+            const pieceImg = new Image();
+            pieceImg.onload = function() {
+                const sx = (pieceImg.width / cols) * col;
+                const sy = (pieceImg.height / rows) * row;
+                const sWidth = pieceImg.width / cols;
+                const sHeight = pieceImg.height / rows;
 
-                        piece.style.backgroundImage = `url(${canvas.toDataURL()})`;
-                        piece.style.backgroundSize = 'cover';
-                        piece.style.backgroundColor = 'transparent';
-                    };
-                    pieceImg.src = processedImageUrl;
+                ctx.clearRect(0, 0, pieceWidth, pieceHeight);
+                ctx.drawImage(pieceImg, sx, sy, sWidth, sHeight, 0, 0, pieceWidth, pieceHeight);
+                addCeramicTexture(ctx, pieceWidth, pieceHeight);
 
-            // Случайная позиция ВНУТРИ панели фрагментов
-            // Учитываем размер пазла, чтобы он не выходил за границы
-                    const maxX = Math.max(10, panelWidth - pieceWidth - 10);
-                    const maxY = Math.max(10, panelHeight - pieceHeight - 10);
+                piece.style.backgroundImage = `url(${canvas.toDataURL()})`;
+                piece.style.backgroundSize = 'cover';
+                piece.style.backgroundColor = 'transparent';
+            };
+            pieceImg.src = processedImageUrl;
+
+            // Позиционируем внутри панели в пикселях с учётом размеров пазла
+            const margin = 5;
+            const maxX = Math.max(margin, panelWidth - pieceWidth - margin * 2);
+            const maxY = Math.max(margin, panelHeight - pieceHeight - margin * 2);
             
-                    const randomX = 10 + Math.random() * maxX;
-                    const randomY = 10 + Math.random() * maxY;
+            const randomX = margin + Math.random() * maxX;
+            const randomY = margin + Math.random() * maxY;
 
-                    piece.style.left = randomX + 'px';
-                    piece.style.top = randomY + 'px';
+            piece.style.left = randomX + 'px';
+            piece.style.top = randomY + 'px';
 
             // Целевая позиция на вазе
-                    const targetX = displayRect.left + (col * pieceWidth) + (pieceWidth / 2);
-                    const targetY = displayRect.top + (row * pieceHeight) + (pieceHeight / 2);
+            const targetX = displayRect.left + (col * pieceWidth) + (pieceWidth / 2);
+            const targetY = displayRect.top + (row * pieceHeight) + (pieceHeight / 2);
 
-                    gameState.targetPositions.push({
-                        x: targetX,
-                        y: targetY,
-                        tolerance: Math.min(pieceWidth, pieceHeight) * 0.4
-                    });
+            gameState.targetPositions.push({
+                x: targetX,
+                y: targetY,
+                tolerance: Math.min(pieceWidth, pieceHeight) * 0.4
+            });
 
-                    makeDraggable(piece, index);
-                    fragmentsArea.appendChild(piece);
-                    gameState.pieces.push(piece);
-                }
-            }
-        }       
+            makeDraggable(piece, index);
+            fragmentsArea.appendChild(piece);
+            gameState.pieces.push(piece);
+        }
+    }
+}
 
         function addCeramicTexture(ctx, width, height) {
             ctx.globalCompositeOperation = 'multiply';
@@ -463,23 +486,24 @@
         }
 
         function returnToFragments(piece) {
-            fragmentsArea.appendChild(piece);
+    fragmentsArea.appendChild(piece);
     
     // Получаем актуальные размеры панели
-            const fragmentsRect = fragmentsArea.getBoundingClientRect();
-            const pieceRect = piece.getBoundingClientRect();
-            const pieceWidth = pieceRect.width;
-            const pieceHeight = pieceRect.height;
+    const fragmentsRect = fragmentsArea.getBoundingClientRect();
+    const pieceRect = piece.getBoundingClientRect();
+    const pieceWidth = pieceRect.width;
+    const pieceHeight = pieceRect.height;
     
-            const panelWidth = fragmentsRect.width - 20;
-            const panelHeight = fragmentsRect.height - 20;
+    const panelWidth = fragmentsRect.width;
+    const panelHeight = fragmentsRect.height;
     
-            const maxX = Math.max(10, panelWidth - pieceWidth - 10);
-            const maxY = Math.max(10, panelHeight - pieceHeight - 10);
+    const margin = 5;
+    const maxX = Math.max(margin, panelWidth - pieceWidth - margin * 2);
+    const maxY = Math.max(margin, panelHeight - pieceHeight - margin * 2);
     
-            piece.style.left = (10 + Math.random() * maxX) + 'px';
-            piece.style.top = (10 + Math.random() * maxY) + 'px';
-        }
+    piece.style.left = (margin + Math.random() * maxX) + 'px';
+    piece.style.top = (margin + Math.random() * maxY) + 'px';
+}
 
         function updateUI() {
             document.getElementById('placedCount').textContent = gameState.placedPieces;
