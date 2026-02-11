@@ -1,305 +1,326 @@
+
 :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e74c3c;
-            --gold: #f1c40f;
-            --hologram-blue: #00d4ff;
-            --success: #27ae60;
-            --bg-dark: #1a1a2e;
-            --glass: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-dark);
-            color: white;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Загрузочный экран */
-        .loader-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #16213e 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-        }
-
-        .museum-logo {
-            font-size: 4rem;
-            margin-bottom: 10rem;
-            padding: 100px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .logo {
-            position: absolute;
-            max-width: 75%;
-            height: auto; 
-            justify-content: center;
-            align-items: center;
+    --primary-color: #2c3e50;
+    --accent-color: #e74c3c;
+    --gold: #f1c40f;
+    --hologram-blue: #00d4ff;
+    --success: #27ae60;
+    --bg-dark: #1a1a2e;
+    --glass: rgba(255, 255, 255, 0.1);
+    --ceramic-brown: #8b5a2b;
+    --ceramic-gold: #d4a76a;
 }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        .loading-bar {
-            width: 300px;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 1rem 0;
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-dark);
+    color: white;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
 
-        .loading-progress {
-            height: 100%;
-            background: var(--hologram-blue);
-            width: 0%;
-            animation: loading 2s ease-in-out forwards;
-        }
+/* Загрузочный экран */
+.loader-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, #16213e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    flex-direction: column;
+}
 
-        @keyframes loading {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
+.museum-logo {
+    font-size: 4rem;
+    margin-bottom: 10rem;
+    padding: 100px;
+    animation: float 3s ease-in-out infinite;
+}
 
-        /* Пролог */
-        .prologue-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            text-align: center;
-            z-index: 100;
-        }
+.logo {
+    position: absolute;
+    max-width: 75%;
+    height: auto; 
+    justify-content: center;
+    align-items: center;
+}
 
-        .princess-hologram {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin-bottom: 2rem;
-        }
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
 
-        .hologram-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 2px solid var(--hologram-blue);
-            border-radius: 50%;
-            animation: hologram-pulse 2s ease-in-out infinite;
-            box-shadow: 0 0 20px var(--hologram-blue);
-        }
+.loading-bar {
+    width: 300px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
 
-        @keyframes hologram-pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-        }
+.loading-progress {
+    height: 100%;
+    background: var(--hologram-blue);
+    width: 0%;
+    animation: loading 2s ease-in-out forwards;
+}
 
-        .hologram-avatar {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4rem;
-            filter: drop-shadow(0 0 10px var(--hologram-blue));
-        }
+@keyframes loading {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
 
-        .dialogue-box {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 500px;
-            border: 1px solid rgba(255,255,255,0.2);
-            animation: slideUp 0.5s ease-out;
-        }
+/* Пролог */
+.prologue-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    text-align: center;
+    z-index: 100;
+}
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.princess-hologram {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 2rem;
+}
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-color) 0%, #c0392b 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-        }
+.hologram-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--hologram-blue);
+    border-radius: 50%;
+    animation: hologram-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 20px var(--hologram-blue);
+}
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
-        }
+@keyframes hologram-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+}
 
-        .hidden {
-            display: none !important;
-        }
+.hologram-avatar {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    filter: drop-shadow(0 0 10px var(--hologram-blue));
+}
 
-        /* AR сцена - всегда на весь экран */
-        .ar-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 50;
-        }
+.dialogue-box {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    border: 1px solid rgba(255,255,255,0.2);
+    animation: slideUp 0.5s ease-out;
+}
 
-        /* AR контент музея */
-        .ar-content-wrapper {
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #0a0a1a 100%);
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 2px solid var(--hologram-blue);
-            box-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
-            position: relative;
-            animation: slideUp 0.4s ease;
-        }
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            font-size: 24px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            transition: all 0.3s;
-        }
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #c0392b 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
 
-        .close-btn:hover {
-            background: var(--accent-color);
-            transform: rotate(90deg);
-        }
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
 
-        .ar-content-header {
-            padding: 2rem 2rem 1rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+.hidden {
+    display: none !important;
+}
 
-        .ar-content-header h2 {
-            color: var(--hologram-blue);
-            margin-bottom: 0.5rem;
-        }
+/* AR сцена */
+.ar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+}
 
-        .subtitle {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
+.scan-hint {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    text-align: center;
+    z-index: 100;
+    border: 1px solid var(--hologram-blue);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
 
-        .ar-content-body {
-            padding: 1.5rem 2rem 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
+/* AR контент музея */
+.ar-content-wrapper {
+    background: linear-gradient(135deg, var(--bg-dark) 0%, #0a0a1a 100%);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 2px solid var(--hologram-blue);
+    box-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
+    position: relative;
+    animation: slideUp 0.4s ease;
+    margin: 5vh auto;
+}
 
-        @media (min-width: 768px) {
-            .ar-content-body {
-                flex-direction: row;
-            }
-        }
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.3s;
+}
 
-        .content-image {
-            flex: 1;
-            min-width: 300px;
-        }
+.close-btn:hover {
+    background: var(--accent-color);
+    transform: rotate(90deg);
+}
 
-        .content-image img {
-            width: 100%;
-            border-radius: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
+.ar-content-header {
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-        .image-caption {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #888;
-            margin-top: 0.5rem;
-            font-style: italic;
-        }
+.ar-content-header h2 {
+    color: var(--hologram-blue);
+    margin-bottom: 0.5rem;
+}
 
-        .content-text {
-            flex: 2;
-        }
+.subtitle {
+    color: #aaa;
+    font-size: 0.9rem;
+}
 
-        .content-text h3 {
-            color: var(--gold);
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--gold);
-            padding-left: 1rem;
-        }
+.ar-content-body {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
 
-        .facts {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1.5rem 0;
-        }
+@media (min-width: 768px) {
+    .ar-content-body {
+        flex-direction: row;
+    }
+}
 
-        .fact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0.8rem 0;
-            padding: 0.5rem;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
+.content-image {
+    flex: 1;
+    min-width: 300px;
+}
 
-        .fact-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
+.content-image img {
+    width: 100%;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
 
-        .fact-icon {
-            font-size: 1.2rem;
-            width: 30px;
-        }
+.image-caption {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
 
-        /* Стили для игры с вазой */
-        /* Стили для игры с вазой - адаптировано под мобильный экран без скролла */
+.content-text {
+    flex: 2;
+}
+
+.content-text h3 {
+    color: var(--gold);
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--gold);
+    padding-left: 1rem;
+}
+
+.facts {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+}
+
+.fact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0.8rem 0;
+    padding: 0.5rem;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.fact-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.fact-icon {
+    font-size: 1.2rem;
+    width: 30px;
+}
+
+/* Стили для игры с вазой */
 .game-screen {
     position: fixed;
     top: 0;
@@ -308,7 +329,7 @@
     height: 100%;
     background: linear-gradient(135deg, #1a120b 0%, #2c1a0e 100%);
     z-index: 200;
-    overflow: hidden; /* Убрали скролл */
+    overflow: hidden;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -318,12 +339,12 @@
     text-align: center;
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #d4a76a;
+    border-bottom: 2px solid var(--ceramic-gold);
     flex-shrink: 0;
 }
 
 .game-header h1 {
-    font-size: 1.4rem; /* Уменьшили */
+    font-size: 1.4rem;
     color: #f5c987;
     margin-bottom: 4px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
@@ -331,7 +352,7 @@
 }
 
 .game-subtitle {
-    font-size: 0.75rem; /* Уменьшили */
+    font-size: 0.75rem;
     color: #d4b59e;
     max-width: 600px;
     margin: 0 auto;
@@ -344,21 +365,21 @@
     align-items: stretch;
     justify-content: center;
     flex: 1;
-    min-height: 0; /* Важно для flex */
+    min-height: 0;
 }
 
 .game-panel {
     background: rgba(44, 30, 20, 0.9);
     border-radius: 10px;
     padding: 10px;
-    border: 2px solid #8b5a2b;
+    border: 2px solid var(--ceramic-brown);
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
 }
 
 .fragments-panel {
-    width: 35%; /* Проценты вместо фиксированных px */
+    width: 35%;
     min-width: 140px;
     max-width: 200px;
 }
@@ -371,7 +392,7 @@
 }
 
 .panel-title {
-    font-size: 0.9rem; /* Уменьшили */
+    font-size: 0.9rem;
     color: #f5c987;
     margin-bottom: 8px;
     text-align: center;
@@ -399,7 +420,7 @@
     flex: 1;
     background: rgba(207, 151, 94, 0);
     border-radius: 8px;
-    border: 2px solid #8b5a2b;
+    border: 2px solid var(--ceramic-brown);
     overflow: visible;
     min-height: 150px;
 }
@@ -442,7 +463,7 @@
     cursor: default;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     z-index: 50;
-    border: 1px solid #d4a76a;
+    border: 1px solid var(--ceramic-gold);
 }
 
 .puzzle-piece.placed:hover {
@@ -458,9 +479,9 @@
 }
 
 .game-btn {
-    padding: 8px 16px; /* Уменьшили */
-    font-size: 0.85rem; /* Уменьшили */
-    background: linear-gradient(to bottom, #a67c52, #8b5a2b);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    background: linear-gradient(to bottom, #a67c52, var(--ceramic-brown));
     color: white;
     border: none;
     border-radius: 6px;
@@ -482,7 +503,7 @@
     padding: 8px;
     background: rgba(44, 30, 20, 0.7);
     border-radius: 8px;
-    border: 1px solid #8b5a2b;
+    border: 1px solid var(--ceramic-brown);
     flex-shrink: 0;
 }
 
@@ -491,7 +512,7 @@
 }
 
 .stat-value {
-    font-size: 1.2rem; /* Уменьшили */
+    font-size: 1.2rem;
     color: #f5c987;
     font-weight: bold;
     display: block;
@@ -499,12 +520,12 @@
 
 .stat-label {
     color: #d4b59e;
-    font-size: 0.65rem; /* Уменьшили */
+    font-size: 0.65rem;
 }
 
 .progress-bar {
     margin-top: 5px;
-    height: 6px; /* Уменьшили */
+    height: 6px;
     background: #5c3d2e;
     border-radius: 3px;
     overflow: hidden;
@@ -513,7 +534,7 @@
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(to right, #d4a76a, #f5c987);
+    background: linear-gradient(to right, var(--ceramic-gold), #f5c987);
     width: 0%;
     transition: width 0.5s;
 }
@@ -523,20 +544,20 @@
     padding: 8px;
     background: rgba(40, 25, 15, 0.8);
     border-radius: 6px;
-    border-left: 3px solid #d4a76a;
+    border-left: 3px solid var(--ceramic-gold);
     flex-shrink: 0;
 }
 
 .vase-name {
     color: #f5c987;
-    font-size: 0.85rem; /* Уменьшили */
+    font-size: 0.85rem;
     margin-bottom: 4px;
     font-weight: bold;
 }
 
 .vase-desc {
     color: #d4b59e;
-    font-size: 0.7rem; /* Уменьшили */
+    font-size: 0.7rem;
     line-height: 1.3;
 }
 
@@ -546,45 +567,301 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(28, 18, 10, 0.98);
-    padding: 25px; /* Уменьшили */
+    padding: 25px;
     border-radius: 12px;
-    border: 2px solid #d4a76a;
+    border: 2px solid var(--ceramic-gold);
     text-align: center;
     z-index: 3000;
     display: none;
     max-width: 90%;
     width: auto;
     max-height: 90vh;
-    overflow-y: auto; /* Скролл только для сообщения о победе если нужно */
+    overflow-y: auto;
     box-shadow: 0 10px 30px rgba(0,0,0,0.9);
 }
 
 .win-message h2 {
     color: #f5c987;
     margin-bottom: 15px;
-    font-size: 1.4rem; /* Уменьшили */
+    font-size: 1.4rem;
 }
 
-/* Медиа-запрос для очень маленьких экранов */
+/* ===== СТИЛИ ДЛЯ ИГРЫ С ОРНАМЕНТОМ ===== */
+.ornament-game-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, #16213e 100%);
+    z-index: 200;
+    overflow: hidden;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ornament-header {
+    text-align: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--hologram-blue);
+    flex-shrink: 0;
+}
+
+.ornament-header h1 {
+    font-size: 1.4rem;
+    color: var(--hologram-blue);
+    margin-bottom: 4px;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.ornament-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.2;
+}
+
+.ornament-game-container {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    justify-content: center;
+    flex: 1;
+    min-height: 0;
+}
+
+.ornament-pattern-section,
+.ornament-draw-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 10px;
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    width: 48%;
+    min-width: 160px;
+    max-width: 400px;
+}
+
+.ornament-panel-title {
+    font-size: 0.9rem;
+    color: var(--hologram-blue);
+    margin-bottom: 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+    padding-bottom: 5px;
+    flex-shrink: 0;
+}
+
+.ornament-pattern-container {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid var(--hologram-blue);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+}
+
+.ornament-pattern-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.ornament-pattern-desc {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    flex-shrink: 0;
+}
+
+.ornament-canvas-wrapper {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid var(--hologram-blue);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    position: relative;
+}
+
+#ornamentCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.ornament-tool-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(0, 212, 255, 0.1);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    flex-shrink: 0;
+}
+
+.ornament-tool-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: var(--hologram-blue);
+    border: 2px solid white;
+}
+
+.ornament-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+.ornament-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    flex: 1;
+    max-width: 120px;
+}
+
+.ornament-btn.primary {
+    background: linear-gradient(135deg, var(--hologram-blue) 0%, #0099cc 100%);
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 212, 255, 0.3);
+}
+
+.ornament-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 212, 255, 0.4);
+}
+
+.ornament-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.ornament-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.ornament-status-bar {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.ornament-stat {
+    text-align: center;
+}
+
+.ornament-stat-value {
+    font-size: 1.1rem;
+    color: var(--hologram-blue);
+    font-weight: bold;
+    display: block;
+}
+
+.ornament-stat-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.65rem;
+}
+
+.ornament-game-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+.ornament-win-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+    padding: 20px;
+}
+
+.ornament-win-content {
+    background: rgba(22, 33, 62, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    border: 2px solid var(--hologram-blue);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.ornament-win-content h2 {
+    color: var(--hologram-blue);
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.ornament-win-content p {
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Медиа-запросы для адаптации */
 @media (max-height: 600px) {
-    .game-header h1 {
+    .game-header h1,
+    .ornament-header h1 {
         font-size: 1.1rem;
     }
     
-    .game-subtitle {
+    .game-subtitle,
+    .ornament-subtitle {
         font-size: 0.65rem;
     }
     
-    .panel-title {
+    .panel-title,
+    .ornament-panel-title {
         font-size: 0.75rem;
     }
     
-    .fragments-area, .vase-area {
+    .fragments-area, .vase-area,
+    .ornament-pattern-container, .ornament-canvas-wrapper {
         min-height: 120px;
     }
     
     .vase-info {
-        display: none; /* Скрываем описание на очень маленьких экранах */
+        display: none;
     }
 }
 
@@ -596,4 +873,28 @@
     .vase-panel {
         min-width: 180px;
     }
+    
+    .ornament-pattern-section,
+    .ornament-draw-section {
+        min-width: 140px;
+    }
+}
+
+@media (max-width: 350px) {
+    .ornament-game-container {
+        flex-direction: column;
+    }
+    
+    .ornament-pattern-section,
+    .ornament-draw-section {
+        width: 100%;
+        max-width: none;
+        min-height: 200px;
+    }
+}
+
+/* Анимации */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
