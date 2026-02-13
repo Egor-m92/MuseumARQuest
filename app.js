@@ -22,38 +22,78 @@ const vaseImage = document.getElementById('vaseImage');
 
 // ===== ИГРА С ОРНАМЕНТОМ =====
 const ornamentGameState = {
-    gridSize: 25,
-    cellSize: 0,
     playerGrid: [],
     targetGrid: [],
-    targetCells: [
-        12, 36, 37, 38, 60, 61, 62, 63, 64, 86, 87, 88, 112,
-        163, 139, 115, 91, 116, 141, 166, 191, 215, 239, 263, 238, 213, 188, 214, 189, 164, 190, 165, 140,
-        161, 135, 109, 83, 186, 211, 236, 261, 235, 209, 183, 158, 133, 108, 210, 184, 185, 160, 159, 134,
-        287, 311, 313, 337,
-        289, 265, 241, 217, 218, 219, 220, 221, 290, 291, 292, 293, 269, 245, 242, 243, 244, 268, 267, 266,
-        339, 340, 341, 342, 343, 369, 395, 421, 365, 391, 417, 418, 419, 420, 366, 367, 368, 392, 393, 394,
-        320, 296, 321, 346, 272, 297, 322, 347, 372, 348, 323, 298, 324,
-        363, 361, 389, 415, 441, 385, 409, 433, 388, 414, 440, 466, 491, 516, 541, 463, 438, 413, 439, 465, 464, 489, 490, 515,
-        386, 411, 436, 461, 410, 434, 458, 483, 508, 533, 509, 485, 460, 435, 459, 484,
-        512, 536, 537, 538, 560, 561, 562, 563, 564, 586, 587, 588, 612,
-        285, 259, 233, 207, 206, 205, 204, 203, 229, 255, 281, 282, 283, 284, 258, 257, 256, 230, 231, 232, 335,
-        334, 333, 332, 331, 355, 379, 359, 383, 407, 406, 405, 404, 403, 380, 381, 382, 358, 357, 356, 304, 278, 303, 328, 352, 327, 302, 277, 252, 276, 301, 326, 300
-    ],
     gameCompleted: false,
-    canvas: null,
-    ctx: null,
-    canvasSize: 0
+    gridSize: 25,
+    cellSize: 0,
+    canvasSize: 400,
+    targetCellsCount: 0
 };
+
+// Цвета для орнамента
+const ornamentColors = {
+    cellColor: '#ff3333',
+    gridColor: '#8b0000',
+    hintColor: '#4a7c4a',
+    backgroundColor: '#ffffff'
+};
+
+// Массив индексов ячеек для белорусского орнамента
+const ornamentTargetCells = [
+    12, 36, 37, 38, 60, 61, 62, 63, 64, 86, 87, 88, 112,
+    163, 139, 115, 91, 116, 141, 166, 191, 215, 239, 263, 238, 213, 188, 214, 189, 164, 190, 165, 140,
+    161, 135, 109, 83, 186, 211, 236, 261, 235, 209, 183, 158, 133, 108, 210, 184, 185, 160, 159, 134,
+    287, 311, 313, 337,
+    289, 265, 241, 217, 218, 219, 220, 221, 290, 291, 292, 293, 269, 245, 242, 243, 244, 268, 267, 266,
+    339, 340, 341, 342, 343, 369, 395, 421, 365, 391, 417, 418, 419, 420, 366, 367, 368, 392, 393, 394,
+    320, 296, 321, 346, 272, 297, 322, 347, 372, 348, 323, 298, 324,
+    363, 361, 389, 415, 441, 385, 409, 433, 388, 414, 440, 466, 491, 516, 541, 463, 438, 413, 439, 465, 464, 489, 490, 515,
+    386, 411, 436, 461, 410, 434, 458, 483, 508, 533, 509, 485, 460, 435, 459, 484,
+    512, 536, 537, 538, 560, 561, 562, 563, 564, 586, 587, 588, 612,
+    285, 259, 233, 207, 206, 205, 204, 203, 229, 255, 281, 282, 283, 284, 258, 257, 256, 230, 231, 232, 335,
+    334, 333, 332, 331, 355, 379, 359, 383, 407, 406, 405, 404, 403, 380, 381, 382, 358, 357, 356, 304, 278, 303, 328, 352, 327, 302, 277, 252, 276, 301, 326, 300
+];
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 window.addEventListener('load', () => {
     setTimeout(() => {
         document.getElementById('loader').classList.add('hidden');
-        document.getElementById('prologue').classList.remove('hidden');
-        animatePrologueText();
+        showPrologue();
     }, 2500);
 });
+
+// ===== ФУНКЦИИ АНИМАЦИИ =====
+
+// Функция для показа экрана с анимацией снизу
+function showScreenWithAnimation(screenElement) {
+    screenElement.classList.remove('hidden');
+    screenElement.classList.add('screen-slide-up');
+    
+    setTimeout(() => {
+        screenElement.classList.remove('screen-slide-up');
+    }, 500);
+}
+
+// Функция для скрытия экрана с анимацией вниз
+function hideScreenWithAnimation(screenElement) {
+    return new Promise((resolve) => {
+        screenElement.classList.add('screen-slide-down');
+        
+        setTimeout(() => {
+            screenElement.classList.add('hidden');
+            screenElement.classList.remove('screen-slide-down');
+            resolve();
+        }, 400);
+    });
+}
+
+// Показать пролог
+function showPrologue() {
+    const prologue = document.getElementById('prologue');
+    showScreenWithAnimation(prologue);
+    animatePrologueText();
+}
 
 // ===== ПРОЛОГ =====
 function animatePrologueText() {
@@ -63,17 +103,19 @@ function animatePrologueText() {
     
     let i = 0;
     const interval = setInterval(() => {
-        text.textContent += originalText[i];
-        i++;
-        if (i >= originalText.length) {
+        if (i < originalText.length) {
+            text.textContent += originalText[i];
+            i++;
+        } else {
             clearInterval(interval);
         }
     }, 30);
 }
 
 // ===== ПЕРВЫЙ КВЕСТ (ШКОЛА) =====
-function startFirstQuest() {
-    document.getElementById('prologue').classList.add('hidden');
+async function startFirstQuest() {
+    await hideScreenWithAnimation(document.getElementById('prologue'));
+    
     document.getElementById('ar-scene-school').classList.remove('hidden');
     
     const sceneEl = document.querySelector('#ar-scene-school a-scene');
@@ -105,10 +147,6 @@ function initSchoolAR(sceneEl) {
             }, 500);
         }
     });
-    
-    target.addEventListener('targetLost', () => {
-        console.log('School target lost');
-    });
 }
 
 function showSchoolContent(arSystem) {
@@ -116,11 +154,14 @@ function showSchoolContent(arSystem) {
     currentARSystem = null;
     
     document.getElementById('ar-scene-school').classList.add('hidden');
-    document.getElementById('ar-content-school').classList.remove('hidden');
+    
+    const content = document.getElementById('ar-content-school');
+    showScreenWithAnimation(content);
 }
 
-function closeSchoolContent() {
-    document.getElementById('ar-content-school').classList.add('hidden');
+async function closeSchoolContent() {
+    await hideScreenWithAnimation(document.getElementById('ar-content-school'));
+    
     document.getElementById('ar-scene-school').classList.remove('hidden');
     
     const sceneEl = document.querySelector('#ar-scene-school a-scene');
@@ -130,8 +171,9 @@ function closeSchoolContent() {
 }
 
 // ===== ВТОРОЙ КВЕСТ (ВАЗА) =====
-function startVaseQuest() {
-    document.getElementById('ar-content-school').classList.add('hidden');
+async function startVaseQuest() {
+    await hideScreenWithAnimation(document.getElementById('ar-content-school'));
+    
     document.getElementById('ar-scene-school').classList.add('hidden');
     
     if (currentARSystem) {
@@ -171,19 +213,28 @@ function initVaseAR(sceneEl) {
             startGame();
         }
     });
-    
-    target.addEventListener('targetLost', () => {
-        console.log('Vase target lost');
-    });
+}
+
+function startGame() {
+    const gameScreen = document.getElementById('game-screen');
+    showScreenWithAnimation(gameScreen);
+    initGame();
 }
 
 // ===== ТРЕТИЙ КВЕСТ (ОРНАМЕНТ) =====
-function startOrnamentQuest() {
-    document.getElementById('game-screen').classList.add('hidden');
+async function startOrnamentQuest() {
+    await Promise.all([
+        hideScreenWithAnimation(document.getElementById('ar-content-school')),
+        hideScreenWithAnimation(document.getElementById('game-screen'))
+    ]);
+    
+    document.getElementById('ar-scene-school').classList.add('hidden');
+    document.getElementById('ar-scene-vase').classList.add('hidden');
     document.getElementById('winMessage').style.display = 'none';
     
-    if (gameState.timerInterval) {
-        clearInterval(gameState.timerInterval);
+    if (currentARSystem) {
+        currentARSystem.stop();
+        currentARSystem = null;
     }
     
     document.getElementById('ar-scene-ornament').classList.remove('hidden');
@@ -215,21 +266,18 @@ function initOrnamentAR(sceneEl) {
             arSystem.stop();
             currentARSystem = null;
             document.getElementById('ar-scene-ornament').classList.add('hidden');
-            startOrnamentGame();
+            showOrnamentGame();
         }
     });
-    
-    target.addEventListener('targetLost', () => {
-        console.log('Ornament target lost');
-    });
 }
 
-// ===== ИГРА С ВАЗОЙ =====
-function startGame() {
-    document.getElementById('game-screen').classList.remove('hidden');
-    initGame();
+function showOrnamentGame() {
+    const ornamentScreen = document.getElementById('ornament-game-screen');
+    showScreenWithAnimation(ornamentScreen);
+    initOrnamentGame();
 }
 
+// ===== ИГРА С ВАЗОЙ (ЛОГИКА) =====
 function initGame() {
     gameState.placedPieces = 0;
     gameState.startTime = Date.now();
@@ -275,6 +323,7 @@ function initGame() {
             }
         }, 500);
     };
+    
     img.onerror = function() {
         const fallbackImg = new Image();
         fallbackImg.onload = function() {
@@ -504,8 +553,7 @@ function checkPlacement(piece, index) {
     const pieceCenterX = pieceRect.left + pieceRect.width/2 - vaseRect.left;
     const pieceCenterY = pieceRect.top + pieceRect.height/2 - vaseRect.top;
 
-    const isOverVase = 
-        pieceRect.left >= vaseRect.left - 100 &&
+    const isOverVase = pieceRect.left >= vaseRect.left - 100 &&
         pieceRect.right <= vaseRect.right + 100 &&
         pieceRect.top >= vaseRect.top - 100 &&
         pieceRect.bottom <= vaseRect.bottom + 100;
@@ -583,7 +631,15 @@ function updateTimer() {
 function showWin() {
     clearInterval(gameState.timerInterval);
     document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
-    document.getElementById('winMessage').style.display = 'block';
+    
+    const winMessage = document.getElementById('winMessage');
+    winMessage.style.display = 'flex';
+    winMessage.classList.add('screen-slide-up');
+    
+    setTimeout(() => {
+        winMessage.classList.remove('screen-slide-up');
+    }, 500);
+    
     vaseImage.style.opacity = '1';
 }
 
@@ -592,267 +648,335 @@ function restartGame() {
     initGame();
 }
 
-function backToMuseum() {
-    document.getElementById('game-screen').classList.add('hidden');
+async function backToMuseum() {
+    await hideScreenWithAnimation(document.getElementById('game-screen'));
     document.getElementById('winMessage').style.display = 'none';
     
     if (gameState.timerInterval) {
         clearInterval(gameState.timerInterval);
     }
     
-    document.getElementById('prologue').classList.remove('hidden');
+    showPrologue();
 }
 
-// ===== ИГРА С ОРНАМЕНТОМ =====
-const ornamentGame = {
-    init: function() {
-        this.canvas = document.getElementById('ornamentCanvas');
-        if (!this.canvas) return;
-        
-        this.ctx = this.canvas.getContext('2d');
-        this.updateCanvasSize();
-        
-        // Инициализация сеток
-        const totalCells = ornamentGameState.gridSize * ornamentGameState.gridSize;
-        ornamentGameState.playerGrid = Array(totalCells).fill(false);
-        ornamentGameState.targetGrid = Array(totalCells).fill(false);
-        
-        // Установка целевых ячеек
-        ornamentGameState.targetCells.forEach(index => {
-            if (index >= 0 && index < totalCells) {
-                ornamentGameState.targetGrid[index] = true;
-            }
-        });
-        
-        // Обработчики событий
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
-        this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('click', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            this.canvas.dispatchEvent(mouseEvent);
-        }, {passive: false});
-        
-        // Обработка изменения размера окна
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-                this.updateCanvasSize();
-                this.draw();
-            }, 250);
-        });
-        
-        this.updateUI();
-        this.draw();
-    },
+// ===== ИГРА С ОРНАМЕНТОМ (ЛОГИКА) =====
+function initOrnamentGame() {
+    ornamentGameState.canvasSize = getOrnamentCanvasSize();
     
-    updateCanvasSize: function() {
-        const isMobile = window.innerWidth <= 768;
-        const maxSize = Math.min(window.innerWidth - 40, 500);
-        const size = isMobile ? Math.min(maxSize, 350) : 350;
-        
-        ornamentGameState.canvasSize = size;
-        this.canvas.width = size;
-        this.canvas.height = size;
-        ornamentGameState.cellSize = size / ornamentGameState.gridSize;
-    },
+    const canvas = document.getElementById('ornamentGameCanvas');
+    canvas.width = ornamentGameState.canvasSize;
+    canvas.height = ornamentGameState.canvasSize;
     
-    draw: function() {
-        if (!this.ctx) return;
-        
-        const ctx = this.ctx;
-        const size = ornamentGameState.canvasSize;
-        const cellSize = ornamentGameState.cellSize;
-        const gridSize = ornamentGameState.gridSize;
-        
-        // Очистка холста
-        ctx.clearRect(0, 0, size, size);
-        
-        // Белый фон
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, size, size);
-        
-        // Рисуем целевой паттерн (полупрозрачный фон)
-        ctx.globalAlpha = 0.15;
-        ctx.fillStyle = '#00d4ff';
-        for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
-            if (ornamentGameState.targetGrid[i]) {
-                const row = Math.floor(i / gridSize);
-                const col = i % gridSize;
-                ctx.fillRect(col * cellSize + 1, row * cellSize + 1, cellSize - 2, cellSize - 2);
-            }
-        }
-        ctx.globalAlpha = 1.0;
-        
-        // Рисуем закрашенные ячейки игрока
-        ctx.fillStyle = '#00d4ff';
-        for (let i = 0; i < ornamentGameState.playerGrid.length; i++) {
-            if (ornamentGameState.playerGrid[i]) {
-                const row = Math.floor(i / gridSize);
-                const col = i % gridSize;
-                ctx.fillRect(col * cellSize + 2, row * cellSize + 2, cellSize - 4, cellSize - 4);
-            }
-        }
-        
-        // Рисуем сетку
-        ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
-        ctx.lineWidth = 1;
-        
-        for (let i = 0; i <= gridSize; i++) {
-            const pos = i * cellSize;
-            ctx.beginPath();
-            ctx.moveTo(pos, 0);
-            ctx.lineTo(pos, size);
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.moveTo(0, pos);
-            ctx.lineTo(size, pos);
-            ctx.stroke();
-        }
-    },
+    ornamentGameState.cellSize = ornamentGameState.canvasSize / ornamentGameState.gridSize;
+    ornamentGameState.gameCompleted = false;
     
-    handleClick: function(e) {
-        if (ornamentGameState.gameCompleted) return;
-        
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        
-        const x = (e.clientX - rect.left) * scaleX;
-        const y = (e.clientY - rect.top) * scaleY;
-        
-        const col = Math.floor(x / ornamentGameState.cellSize);
-        const row = Math.floor(y / ornamentGameState.cellSize);
-        
-        if (col >= 0 && col < ornamentGameState.gridSize && row >= 0 && row < ornamentGameState.gridSize) {
-            const index = row * ornamentGameState.gridSize + col;
-            ornamentGameState.playerGrid[index] = !ornamentGameState.playerGrid[index];
-            this.updateUI();
-            this.draw();
-        }
-    },
+    ornamentGameState.playerGrid = Array(ornamentGameState.gridSize * ornamentGameState.gridSize).fill(false);
+    ornamentGameState.targetGrid = Array(ornamentGameState.gridSize * ornamentGameState.gridSize).fill(false);
     
-    updateUI: function() {
-        const filled = ornamentGameState.playerGrid.filter(cell => cell).length;
-        const total = ornamentGameState.targetCells.length;
-        
-        document.getElementById('ornamentFilled').textContent = filled;
-        document.getElementById('ornamentTotal').textContent = total;
-        
-        if (ornamentGameState.gameCompleted) {
-            document.getElementById('ornamentStatus').textContent = 'Завершено!';
-            document.getElementById('ornamentStatus').style.color = '#27ae60';
-        } else {
-            document.getElementById('ornamentStatus').textContent = 'В процессе';
-            document.getElementById('ornamentStatus').style.color = '#f1c40f';
+    ornamentTargetCells.forEach(cellIndex => {
+        if (cellIndex >= 0 && cellIndex < ornamentGameState.targetGrid.length) {
+            ornamentGameState.targetGrid[cellIndex] = true;
         }
-    },
+    });
     
-    check: function() {
-        // Проверяем, что все целевые ячейки закрашены
-        let correct = true;
-        for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
-            if (ornamentGameState.targetGrid[i] && !ornamentGameState.playerGrid[i]) {
-                correct = false;
-                break;
-            }
-        }
-        
-        // Проверяем, что нет лишних закрашенных ячеек
-        let extraCells = 0;
-        for (let i = 0; i < ornamentGameState.playerGrid.length; i++) {
-            if (ornamentGameState.playerGrid[i] && !ornamentGameState.targetGrid[i]) {
-                extraCells++;
-            }
-        }
-        
-        if (correct && extraCells === 0) {
-            ornamentGameState.gameCompleted = true;
-            this.updateUI();
-            this.showWin();
-        } else {
-            const statusEl = document.getElementById('ornamentStatus');
-            const originalText = statusEl.textContent;
-            const originalColor = statusEl.style.color;
-            
-            statusEl.textContent = 'Неверно!';
-            statusEl.style.color = '#e74c3c';
-            
-            setTimeout(() => {
-                statusEl.textContent = originalText;
-                statusEl.style.color = originalColor;
-            }, 1500);
-        }
-    },
+    ornamentGameState.targetCellsCount = ornamentTargetCells.length;
+    document.getElementById('ornamentTotalCount').textContent = ornamentGameState.targetCellsCount;
     
-    hint: function() {
-        if (ornamentGameState.gameCompleted) return;
+    drawOrnamentGame();
+    updateOrnamentUI();
+}
+
+function getOrnamentCanvasSize() {
+    const isMobile = window.innerWidth <= 768;
+    const maxSize = Math.min(window.innerWidth - 40, 500);
+    return isMobile ? Math.min(maxSize, 400) : 400;
+}
+
+function drawOrnamentGame() {
+    const canvas = document.getElementById('ornamentGameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = ornamentColors.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    drawOrnamentGrid(ctx);
+    drawOrnamentPlayerCells(ctx);
+    drawOrnamentTargetPattern(ctx);
+}
+
+function drawOrnamentGrid(ctx) {
+    const canvas = document.getElementById('ornamentGameCanvas');
+    ctx.strokeStyle = ornamentColors.gridColor;
+    ctx.lineWidth = Math.max(1, ornamentGameState.canvasSize / 400);
+    
+    for (let i = 0; i <= ornamentGameState.gridSize; i++) {
+        const x = i * ornamentGameState.cellSize;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
         
-        // Находим первую незакрашенную целевую ячейку
-        let hintIndex = -1;
-        for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
-            if (ornamentGameState.targetGrid[i] && !ornamentGameState.playerGrid[i]) {
-                hintIndex = i;
-                break;
-            }
-        }
-        
-        if (hintIndex !== -1) {
-            const row = Math.floor(hintIndex / ornamentGameState.gridSize);
-            const col = hintIndex % ornamentGameState.gridSize;
-            const cellSize = ornamentGameState.cellSize;
-            
-            // Мигание подсказки
-            let blinkCount = 0;
-            const blinkInterval = setInterval(() => {
-                this.draw();
-                
-                if (blinkCount % 2 === 0) {
-                    this.ctx.fillStyle = 'rgba(241, 196, 15, 0.6)';
-                    this.ctx.fillRect(col * cellSize + 2, row * cellSize + 2, cellSize - 4, cellSize - 4);
-                }
-                
-                blinkCount++;
-                if (blinkCount > 6) {
-                    clearInterval(blinkInterval);
-                    this.draw();
-                }
-            }, 300);
-        }
-    },
-    
-    clear: function() {
-        ornamentGameState.playerGrid = Array(ornamentGameState.gridSize * ornamentGameState.gridSize).fill(false);
-        ornamentGameState.gameCompleted = false;
-        this.updateUI();
-        this.draw();
-    },
-    
-    restart: function() {
-        document.getElementById('ornamentWinMessage').style.display = 'none';
-        this.clear();
-    },
-    
-    showWin: function() {
-        document.getElementById('ornamentAccuracy').textContent = '100%';
-        document.getElementById('ornamentWinMessage').style.display = 'flex';
+        const y = i * ornamentGameState.cellSize;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
     }
-};
-
-function startOrnamentGame() {
-    document.getElementById('ornament-game-screen').classList.remove('hidden');
-    ornamentGame.init();
 }
 
-function backToMuseumFromOrnament() {
-    document.getElementById('ornament-game-screen').classList.add('hidden');
-    document.getElementById('ornamentWinMessage').style.display = 'none';
-    document.getElementById('prologue').classList.remove('hidden');
+function drawOrnamentPlayerCells(ctx) {
+    for (let i = 0; i < ornamentGameState.playerGrid.length; i++) {
+        if (ornamentGameState.playerGrid[i]) {
+            const row = Math.floor(i / ornamentGameState.gridSize);
+            const col = i % ornamentGameState.gridSize;
+            
+            ctx.fillStyle = ornamentColors.cellColor;
+            ctx.fillRect(
+                col * ornamentGameState.cellSize + 1,
+                row * ornamentGameState.cellSize + 1,
+                ornamentGameState.cellSize - 2,
+                ornamentGameState.cellSize - 2
+            );
+        }
+    }
 }
 
+function drawOrnamentTargetPattern(ctx) {
+    ctx.globalAlpha = 0.1;
+    
+    for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
+        if (ornamentGameState.targetGrid[i]) {
+            const row = Math.floor(i / ornamentGameState.gridSize);
+            const col = i % ornamentGameState.gridSize;
+            
+            ctx.fillStyle = ornamentColors.gridColor;
+            ctx.fillRect(
+                col * ornamentGameState.cellSize + 1,
+                row * ornamentGameState.cellSize + 1,
+                ornamentGameState.cellSize - 2,
+                ornamentGameState.cellSize - 2
+            );
+        }
+    }
+    
+    ctx.globalAlpha = 1.0;
+}
+
+function getOrnamentCellIndex(x, y) {
+    const col = Math.floor(x / ornamentGameState.cellSize);
+    const row = Math.floor(y / ornamentGameState.cellSize);
+    
+    if (col >= 0 && col < ornamentGameState.gridSize && row >= 0 && row < ornamentGameState.gridSize) {
+        return row * ornamentGameState.gridSize + col;
+    }
+    return -1;
+}
+
+function handleOrnamentCellClick(cellIndex) {
+    if (ornamentGameState.gameCompleted || cellIndex === -1) return;
+    
+    ornamentGameState.playerGrid[cellIndex] = !ornamentGameState.playerGrid[cellIndex];
+    
+    updateOrnamentUI();
+    drawOrnamentGame();
+}
+
+function updateOrnamentUI() {
+    const filledCount = ornamentGameState.playerGrid.filter(cell => cell).length;
+    document.getElementById('ornamentFilledCount').textContent = filledCount;
+    
+    const statusDisplay = document.getElementById('ornamentStatusDisplay');
+    if (ornamentGameState.gameCompleted) {
+        statusDisplay.textContent = 'Завершено!';
+        statusDisplay.style.color = '#4a7c4a';
+    } else {
+        statusDisplay.textContent = 'В процессе';
+        statusDisplay.style.color = '#ffcc00';
+    }
+}
+
+function checkOrnamentPattern() {
+    for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
+        if (ornamentGameState.targetGrid[i] && !ornamentGameState.playerGrid[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function showOrnamentResult(success) {
+    if (success) {
+        const accuracy = calculateOrnamentAccuracy();
+        document.getElementById('ornamentResultDetails').textContent = 
+            `Вы успешно повторили орнамент! Точность: ${accuracy}%`;
+        
+        const resultMessage = document.getElementById('ornamentResultMessage');
+        resultMessage.style.display = 'flex';
+        resultMessage.classList.add('screen-slide-up');
+        
+        setTimeout(() => {
+            resultMessage.classList.remove('screen-slide-up');
+        }, 500);
+        
+        ornamentGameState.gameCompleted = true;
+        updateOrnamentUI();
+    } else {
+        const statusDisplay = document.getElementById('ornamentStatusDisplay');
+        const originalStatus = statusDisplay.textContent;
+        statusDisplay.textContent = 'Неверно!';
+        statusDisplay.style.color = '#ff3333';
+        
+        setTimeout(() => {
+            statusDisplay.textContent = originalStatus;
+            statusDisplay.style.color = ornamentGameState.gameCompleted ? '#4a7c4a' : '#ffcc00';
+        }, 1500);
+    }
+}
+
+function calculateOrnamentAccuracy() {
+    let correct = 0;
+    let totalTarget = 0;
+    
+    for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
+        if (ornamentGameState.targetGrid[i]) {
+            totalTarget++;
+            if (ornamentGameState.playerGrid[i]) {
+                correct++;
+            }
+        }
+    }
+    
+    return totalTarget > 0 ? Math.round((correct / totalTarget) * 100) : 0;
+}
+
+function showOrnamentHint() {
+    if (ornamentGameState.gameCompleted) return;
+    
+    let hintIndex = -1;
+    for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
+        if (ornamentGameState.targetGrid[i] && !ornamentGameState.playerGrid[i]) {
+            hintIndex = i;
+            break;
+        }
+    }
+    
+    if (hintIndex !== -1) {
+        const row = Math.floor(hintIndex / ornamentGameState.gridSize);
+        const col = hintIndex % ornamentGameState.gridSize;
+        const canvas = document.getElementById('ornamentGameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let blinkCount = 0;
+        const blinkInterval = setInterval(() => {
+            drawOrnamentGame();
+            
+            ctx.save();
+            ctx.fillStyle = blinkCount % 2 === 0 ? ornamentColors.hintColor : ornamentColors.cellColor;
+            ctx.globalAlpha = 0.5;
+            ctx.fillRect(
+                col * ornamentGameState.cellSize + 2,
+                row * ornamentGameState.cellSize + 2,
+                ornamentGameState.cellSize - 4,
+                ornamentGameState.cellSize - 4
+            );
+            ctx.restore();
+            
+            blinkCount++;
+            if (blinkCount > 6) {
+                clearInterval(blinkInterval);
+                drawOrnamentGame();
+            }
+        }, 300);
+    }
+}
+
+function clearOrnamentGame() {
+    ornamentGameState.playerGrid = Array(ornamentGameState.gridSize * ornamentGameState.gridSize).fill(false);
+    ornamentGameState.gameCompleted = false;
+    drawOrnamentGame();
+    updateOrnamentUI();
+}
+
+async function resetOrnamentGame() {
+    await hideScreenWithAnimation(document.getElementById('ornamentResultMessage'));
+    clearOrnamentGame();
+}
+
+async function backFromOrnament() {
+    await hideScreenWithAnimation(document.getElementById('ornament-game-screen'));
+    document.getElementById('ornamentResultMessage').style.display = 'none';
+    showPrologue();
+}
+
+// ===== ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ ОРНАМЕНТА =====
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const canvas = document.getElementById('ornamentGameCanvas');
+        if (canvas) {
+            canvas.addEventListener('click', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                
+                const cellIndex = getOrnamentCellIndex(x, y);
+                handleOrnamentCellClick(cellIndex);
+            });
+            
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('click', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+        }
+        
+        const clearBtn = document.getElementById('ornamentClearBtn');
+        if (clearBtn) clearBtn.addEventListener('click', clearOrnamentGame);
+        
+        const checkBtn = document.getElementById('ornamentCheckBtn');
+        if (checkBtn) checkBtn.addEventListener('click', () => {
+            const success = checkOrnamentPattern();
+            showOrnamentResult(success);
+        });
+        
+        const hintBtn = document.getElementById('ornamentHintBtn');
+        if (hintBtn) hintBtn.addEventListener('click', showOrnamentHint);
+        
+        const backBtn = document.getElementById('ornamentBackBtn');
+        if (backBtn) backBtn.addEventListener('click', backFromOrnament);
+        
+        const restartBtn = document.getElementById('ornamentRestartBtn');
+        if (restartBtn) restartBtn.addEventListener('click', resetOrnamentGame);
+        
+        const backFromWinBtn = document.getElementById('ornamentBackFromWinBtn');
+        if (backFromWinBtn) backFromWinBtn.addEventListener('click', backFromOrnament);
+    }, 500);
+});
+
+// Обработка изменения размера окна для орнамента
+window.addEventListener('resize', () => {
+    if (!document.getElementById('ornament-game-screen').classList.contains('hidden')) {
+        clearTimeout(window.ornamentResizeTimeout);
+        window.ornamentResizeTimeout = setTimeout(() => {
+            ornamentGameState.canvasSize = getOrnamentCanvasSize();
+            const canvas = document.getElementById('ornamentGameCanvas');
+            canvas.width = ornamentGameState.canvasSize;
+            canvas.height = ornamentGameState.canvasSize;
+            ornamentGameState.cellSize = ornamentGameState.canvasSize / ornamentGameState.gridSize;
+            drawOrnamentGame();
+        }, 250);
+    }
+});
+
+// Обработка изменения размера окна для вазы
 window.addEventListener('resize', () => {
     if (gameState.pieces.length > 0 && gameState.placedPieces < gameState.totalPieces) {
         const rows = 4;
@@ -889,3 +1013,12 @@ window.addEventListener('resize', () => {
         });
     }
 });
+
+// Экспортируем функции для вызова из HTML
+window.startFirstQuest = startFirstQuest;
+window.closeSchoolContent = closeSchoolContent;
+window.startVaseQuest = startVaseQuest;
+window.startOrnamentQuest = startOrnamentQuest;
+window.restartGame = restartGame;
+window.backToMuseum = backToMuseum;
+window.backFromOrnament = backFromOrnament;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Museum ArQuest - Квесты музея</title>
+    <title>Museum ArQuest - Белорусский орнамент</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -16,7 +16,7 @@
     <div id="loader" class="loader-screen">
         <div class="loader-content">
             <div class="museum-logo">
-                <img class="logo" src="./assets/logo.png" alt="">
+                <img class="logo" src="./assets/logo.png" alt="Логотип музея">
             </div>
             <h1>История в смартфоне</h1>
             <div class="loading-bar">
@@ -65,7 +65,7 @@
         </a-scene>
         <div class="scan-hint">Наведите камеру на черепки вазы</div>
     </div>
-
+    
     <!-- AR сцена для третьей метки (орнамент) -->
     <div id="ar-scene-ornament" class="ar-container hidden">
         <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
@@ -76,7 +76,7 @@
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="ornament-target" mindar-image-target="targetIndex: 2"></a-entity>
         </a-scene>
-        <div class="scan-hint">Наведите камеру на образец белорусского орнамента</div>
+        <div class="scan-hint">Наведите камеру на белорусский орнамент</div>
     </div>
 
     <!-- AR контент школы -->
@@ -117,6 +117,9 @@
                     
                     <button class="btn-primary next-quest-btn" onclick="startVaseQuest()">
                         🏺 Найти древнюю вазу
+                    </button>
+                    <button class="btn-primary next-quest-btn" onclick="startOrnamentQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b0000 0%, #cc3333 100%);">
+                        🎨 Белорусский орнамент
                     </button>
                 </div>
             </div>
@@ -176,79 +179,84 @@
         </div>
     </div>
 
-    <!-- Сообщение о победе в игре с вазой -->
+    <!-- Сообщение о победе (ваза) -->
     <div class="win-message" id="winMessage">
         <h2>🏆 Ваза восстановлена!</h2>
-        <p>Вы успешно собрали древнеславянскую вазу. Артефакт сохранен для истории!</p>
+        <p>Вы успешно собрали древнеславянскую вазу. Археологический артефакт сохранен для истории!</p>
         <p>Время: <span id="finalTime">00:00</span></p>
         <button class="game-btn" onclick="restartGame()">Играть снова</button>
-        <button class="game-btn" onclick="startOrnamentQuest()">🎨 Следующий квест</button>
+        <button class="game-btn" onclick="backToMuseum()">Вернуться в музей</button>
     </div>
-
+    
     <!-- Экран игры с орнаментом -->
     <div id="ornament-game-screen" class="ornament-game-screen hidden">
-        <div class="ornament-header">
+        <div class="ornament-game-header">
             <h1>Белорусский орнамент</h1>
-            <p class="ornament-subtitle">Закрасьте квадраты, чтобы повторить традиционный белорусский узор</p>
+            <p class="ornament-game-subtitle">Закрасьте квадраты, чтобы повторить традиционный белорусский орнамент!</p>
         </div>
         
         <div class="ornament-game-container">
             <div class="ornament-pattern-section">
-                <h2 class="ornament-panel-title">📜 Образец</h2>
-                <div class="ornament-pattern-container">
-                    <img id="ornamentPatternImage" src="./assets/orname.jpg" alt="Белорусский орнамент">
+                <h2 class="ornament-section-title">Образец орнамента</h2>
+                <div class="ornament-pattern-image-container">
+                    <img id="ornamentPatternImage" class="ornament-pattern-image" src="./assets/orname.jpg" alt="Белорусский орнамент">
                 </div>
-                <p class="ornament-pattern-desc">Традиционный белорусский узор</p>
+                <p class="ornament-pattern-caption">Традиционный белорусский узор</p>
             </div>
             
             <div class="ornament-draw-section">
-                <h2 class="ornament-panel-title">🎨 Ваш орнамент</h2>
+                <h2 class="ornament-section-title">Закрасьте орнамент</h2>
                 <div class="ornament-canvas-wrapper">
-                    <canvas id="ornamentCanvas"></canvas>
+                    <canvas id="ornamentGameCanvas"></canvas>
                 </div>
                 
                 <div class="ornament-tool-info">
-                    <div class="ornament-tool-icon"></div>
+                    <div class="ornament-tool-color"></div>
                     <span>Нажмите на квадрат, чтобы закрасить/стереть</span>
                 </div>
                 
+                <div class="ornament-mobile-tip">
+                    💡 Нажимайте на квадраты, чтобы закрашивать или стирать их
+                </div>
+                
+                <div class="ornament-hint-info">
+                    Закрасьте красные квадраты, чтобы повторить узор слева
+                </div>
+                
                 <div class="ornament-controls">
-                    <button class="ornament-btn secondary" onclick="ornamentGame.clear()">Очистить</button>
-                    <button class="ornament-btn secondary" onclick="ornamentGame.hint()">Подсказка</button>
-                    <button class="ornament-btn primary" onclick="ornamentGame.check()">Проверить</button>
+                    <button id="ornamentClearBtn" class="ornament-btn ornament-btn-clear">Очистить все</button>
+                    <button id="ornamentCheckBtn" class="ornament-btn ornament-btn-check">Проверить</button>
+                    <button id="ornamentHintBtn" class="ornament-btn ornament-btn-hint">Подсказка</button>
+                    <button id="ornamentBackBtn" class="ornament-btn ornament-btn-back">🏛️ В музей</button>
                 </div>
                 
                 <div class="ornament-status-bar">
-                    <div class="ornament-stat">
-                        <span class="ornament-stat-value" id="ornamentFilled">0</span>
-                        <span class="ornament-stat-label">Закрашено</span>
+                    <div class="ornament-status-item">
+                        <span class="ornament-status-label">Закрашено</span>
+                        <span id="ornamentFilledCount" class="ornament-status-value">0</span>
                     </div>
-                    <div class="ornament-stat">
-                        <span class="ornament-stat-value" id="ornamentTotal">64</span>
-                        <span class="ornament-stat-label">Нужно</span>
+                    <div class="ornament-status-item">
+                        <span class="ornament-status-label">Нужно</span>
+                        <span id="ornamentTotalCount" class="ornament-status-value">64</span>
                     </div>
-                    <div class="ornament-stat">
-                        <span class="ornament-stat-value" id="ornamentStatus">В процессе</span>
-                        <span class="ornament-stat-label">Статус</span>
+                    <div class="ornament-status-item">
+                        <span class="ornament-status-label">Статус</span>
+                        <span id="ornamentStatusDisplay" class="ornament-status-value">В процессе</span>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="ornament-game-controls">
-            <button class="ornament-btn secondary" onclick="ornamentGame.restart()">🔄 Начать заново</button>
-            <button class="ornament-btn secondary" onclick="backToMuseumFromOrnament()">🏛️ В музей</button>
-        </div>
     </div>
-
-    <!-- Сообщение о победе в игре с орнаментом -->
-    <div class="ornament-win-message" id="ornamentWinMessage">
-        <div class="ornament-win-content">
-            <h2>🎉 Поздравляем!</h2>
-            <p>Вы успешно воспроизвели белорусский орнамент!</p>
-            <p>Точность: <span id="ornamentAccuracy">100%</span></p>
-            <button class="ornament-btn primary" onclick="ornamentGame.restart()">Играть снова</button>
-            <button class="ornament-btn secondary" onclick="backToMuseumFromOrnament()">Вернуться в музей</button>
+    
+    <!-- Сообщение о победе (орнамент) -->
+    <div id="ornamentResultMessage" class="ornament-result-message">
+        <div class="ornament-result-content">
+            <div class="ornament-result-title">Поздравляем!</div>
+            <div class="ornament-result-details" id="ornamentResultDetails">Вы успешно повторили орнамент!</div>
+            <div class="ornament-result-buttons">
+                <button id="ornamentRestartBtn" class="ornament-btn ornament-btn-success">Начать заново</button>
+                <button id="ornamentBackFromWinBtn" class="ornament-btn ornament-btn-back">Вернуться в музей</button>
+            </div>
         </div>
     </div>
 
