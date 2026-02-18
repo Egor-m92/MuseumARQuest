@@ -1157,7 +1157,7 @@ body {
     color: #e6b17e;
     margin-bottom: 15px;
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 0.8rem;
 }
 
 .cipher-key-grid {
@@ -1179,7 +1179,7 @@ body {
 }
 
 .cipher-key-number {
-    font-size: 0.8rem;
+    font-size: 0.5rem;
     color: #ffd700;
 }
 
@@ -1237,13 +1237,13 @@ body {
 }
 
 .cipher-letter-btn {
-    width: 45px;
-    height: 45px;
+    width: 35px;
+    height: 35px;
     border: none;
     border-radius: 8px;
     background: linear-gradient(135deg, #8b5a2b, #b8860b);
     color: white;
-    font-size: 1.2rem;
+    font-size: 0.8rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
