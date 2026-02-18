@@ -1013,6 +1013,411 @@ window.addEventListener('resize', () => {
         });
     }
 });
+// ===== ИГРА РАСШИФРУЙ ФРАЗУ =====
+const cipherGameState = {
+    currentPhrase: '',
+    encodedPhrase: '',
+    userInput: '',
+    alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
+    phrases: [
+        'добрушскийрайон',
+        'музейнаятайна',
+        'древнийсвиток',
+        'историянарода',
+        'княгиняпаскевич',
+        'белорусскийорнамент',
+        'культурноенаследие',
+        'памятьпоколений',
+        'роднаязямля'
+    ],
+    hints: [
+        'Название района',
+        'Что хранит экспонаты',
+        'Древний документ',
+        'Прошлое народа',
+        'Основательница школы',
+        'Традиционный узор',
+        'Что передаем потомкам',
+        'Связь времен',
+        'Любимая земля'
+    ],
+    currentHint: '',
+    gameCompleted: false
+};
+
+// Инициализация игры с шифром
+function initCipherGame() {
+    // Выбираем случайную фразу
+    const randomIndex = Math.floor(Math.random() * cipherGameState.phrases.length);
+    cipherGameState.currentPhrase = cipherGameState.phrases[randomIndex];
+    cipherGameState.currentHint = cipherGameState.hints[randomIndex];
+    cipherGameState.userInput = '';
+    cipherGameState.gameCompleted = false;
+    
+    // Шифруем фразу (цифры вместо букв)
+    encodePhrase();
+    
+    // Обновляем интерфейс
+    document.getElementById('cipherEncoded').textContent = cipherGameState.encodedPhrase;
+    document.getElementById('cipherHint').textContent = `💡 Подсказка: ${cipherGameState.currentHint}`;
+    document.getElementById('cipherUserInput').value = '';
+    
+    // Создаем клавиатуру с буквами
+    createCipherKeyboard();
+    
+    // Создаем ключ шифра
+    createCipherKey();
+    
+    updateCipherProgress();
+}
+
+// Шифрование фразы (каждая буква -> номер в алфавите)
+function encodePhrase() {
+    let encoded = '';
+    for (let i = 0; i < cipherGameState.currentPhrase.length; i++) {
+        const char = cipherGameState.currentPhrase[i];
+        const index = cipherGameState.alphabet.indexOf(char);
+        if (index !== -1) {
+            // Добавляем ведущий ноль для двузначных чисел
+            encoded += (index + 1).toString().padStart(2, '0') + ' ';
+        } else {
+            encoded += char + ' ';
+        }
+    }
+    cipherGameState.encodedPhrase = encoded.trim();
+}
+
+// Создание ключа шифра
+function createCipherKey() {
+    const keyGrid = document.getElementById('cipherKey');
+    keyGrid.innerHTML = '';
+    
+    // Показываем соответствие цифр и букв (1-33 для русского алфавита)
+    for (let i = 1; i <= 33; i++) {
+        const keyItem = document.createElement('div');
+        keyItem.className = 'cipher-key-item';
+        
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'cipher-key-number';
+        numberSpan.textContent = i.toString().padStart(2, '0');
+        
+        const letterSpan = document.createElement('span');
+        letterSpan.className = 'cipher-key-letter';
+        letterSpan.textContent = cipherGameState.alphabet[i - 1].toUpperCase();
+        
+        keyItem.appendChild(numberSpan);
+        keyItem.appendChild(letterSpan);
+        keyGrid.appendChild(keyItem);
+    }
+}
+
+// Создание клавиатуры с буквами
+function createCipherKeyboard() {
+    const lettersContainer = document.getElementById('cipherLetters');
+    lettersContainer.innerHTML = '';
+    
+    const alphabetArray = cipherGameState.alphabet.split('');
+    
+    alphabetArray.forEach(letter => {
+        const btn = document.createElement('button');
+        btn.className = 'cipher-letter-btn';
+        btn.textContent = letter.toUpperCase();
+        btn.onclick = () => addLetterToInput(letter);
+        lettersContainer.appendChild(btn);
+    });
+    
+    // Добавляем кнопку пробела
+    const spaceBtn = document.createElement('button');
+    spaceBtn.className = 'cipher-letter-btn';
+    spaceBtn.textContent = '␣';
+    spaceBtn.style.width = '90px';
+    spaceBtn.onclick = () => addLetterToInput(' ');
+    lettersContainer.appendChild(spaceBtn);
+    
+    // Добавляем кнопку удаления
+    const backspaceBtn = document.createElement('button');
+    backspaceBtn.className = 'cipher-letter-btn';
+    backspaceBtn.textContent = '⌫';
+    backspaceBtn.style.width = '90px';
+    backspaceBtn.onclick = removeLastLetter;
+    lettersContainer.appendChild(backspaceBtn);
+}
+
+// Добавить букву в поле ввода
+function addLetterToInput(letter) {
+    if (cipherGameState.gameCompleted) return;
+    
+    const input = document.getElementById('cipherUserInput');
+    const currentValue = input.value;
+    
+    if (currentValue.length < cipherGameState.currentPhrase.length) {
+        input.value = currentValue + letter;
+        cipherGameState.userInput = input.value;
+        updateCipherProgress();
+    }
+}
+
+// Удалить последнюю букву
+function removeLastLetter() {
+    if (cipherGameState.gameCompleted) return;
+    
+    const input = document.getElementById('cipherUserInput');
+    input.value = input.value.slice(0, -1);
+    cipherGameState.userInput = input.value;
+    updateCipherProgress();
+}
+
+// Обновить прогресс
+function updateCipherProgress() {
+    const input = document.getElementById('cipherUserInput').value;
+    const targetLength = cipherGameState.currentPhrase.length;
+    const currentLength = input.length;
+    
+    document.getElementById('cipherProgress').textContent = `${currentLength}/${targetLength}`;
+    
+    const percentage = (currentLength / targetLength) * 100;
+    document.getElementById('cipherProgressFill').style.width = percentage + '%';
+    
+    // Подсвечиваем правильные буквы на клавиатуре
+    highlightCorrectLetters();
+}
+
+// Подсветка правильных букв
+function highlightCorrectLetters() {
+    const input = document.getElementById('cipherUserInput').value;
+    const buttons = document.querySelectorAll('.cipher-letter-btn');
+    
+    buttons.forEach(btn => {
+        if (btn.textContent.length === 1 && btn.textContent !== '␣' && btn.textContent !== '⌫') {
+            const letter = btn.textContent.toLowerCase();
+            // Проверяем, есть ли эта буква в целевой фразе на текущей позиции или дальше
+            if (cipherGameState.currentPhrase.includes(letter)) {
+                btn.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            } else {
+                btn.style.background = 'linear-gradient(135deg, #8b5a2b, #b8860b)';
+            }
+        }
+    });
+}
+
+// Проверка расшифровки
+function checkCipherPhrase() {
+    const userInput = document.getElementById('cipherUserInput').value;
+    const normalizedInput = userInput.toLowerCase().replace(/\s+/g, '');
+    const normalizedTarget = cipherGameState.currentPhrase.toLowerCase();
+    
+    if (normalizedInput === normalizedTarget) {
+        // Победа!
+        showCipherWin();
+    } else {
+        // Неправильно
+        const statusDisplay = document.getElementById('cipherUserInput');
+        statusDisplay.style.borderColor = '#e74c3c';
+        statusDisplay.style.boxShadow = '0 0 10px rgba(231, 76, 60, 0.5)';
+        
+        setTimeout(() => {
+            statusDisplay.style.borderColor = '#c49a6c';
+            statusDisplay.style.boxShadow = 'none';
+        }, 1000);
+        
+        // Показываем сколько букв правильно
+        showCipherHint(false);
+    }
+}
+
+// Показать подсказку
+function showCipherHint(isExplicit = true) {
+    const input = document.getElementById('cipherUserInput').value;
+    
+    if (isExplicit) {
+        // Показываем первую неправильную букву
+        for (let i = 0; i < cipherGameState.currentPhrase.length; i++) {
+            if (i >= input.length || input[i] !== cipherGameState.currentPhrase[i]) {
+                // Мигаем нужной буквой на клавиатуре
+                const targetLetter = cipherGameState.currentPhrase[i];
+                const buttons = document.querySelectorAll('.cipher-letter-btn');
+                
+                buttons.forEach(btn => {
+                    if (btn.textContent.toLowerCase() === targetLetter) {
+                        btn.style.animation = 'pulse 0.5s ease infinite';
+                        setTimeout(() => {
+                            btn.style.animation = '';
+                        }, 2000);
+                    }
+                });
+                break;
+            }
+        }
+    } else {
+        // Показываем количество правильных букв
+        let correctCount = 0;
+        for (let i = 0; i < Math.min(input.length, cipherGameState.currentPhrase.length); i++) {
+            if (input[i] === cipherGameState.currentPhrase[i]) {
+                correctCount++;
+            }
+        }
+        
+        // Временное сообщение
+        const hintInfo = document.getElementById('cipherHint');
+        const originalText = hintInfo.innerHTML;
+        hintInfo.innerHTML = `💡 Правильно: ${correctCount} из ${cipherGameState.currentPhrase.length} букв`;
+        
+        setTimeout(() => {
+            hintInfo.innerHTML = originalText;
+        }, 2000);
+    }
+}
+
+// Показать окно победы
+function showCipherWin() {
+    cipherGameState.gameCompleted = true;
+    
+    document.getElementById('cipherResultDetails').textContent = 
+        'Вы успешно расшифровали древнее послание!';
+    document.getElementById('cipherResultPhrase').textContent = 
+        cipherGameState.currentPhrase.toUpperCase();
+    
+    const resultMessage = document.getElementById('cipherResultMessage');
+    resultMessage.style.display = 'flex';
+    resultMessage.classList.add('screen-slide-up');
+    
+    setTimeout(() => {
+        resultMessage.classList.remove('screen-slide-up');
+    }, 500);
+}
+
+// Очистить поле ввода
+function clearCipherInput() {
+    if (cipherGameState.gameCompleted) return;
+    
+    document.getElementById('cipherUserInput').value = '';
+    cipherGameState.userInput = '';
+    updateCipherProgress();
+}
+
+// Перезапустить игру с новой фразой
+function restartCipherGame() {
+    hideScreenWithAnimation(document.getElementById('cipherResultMessage')).then(() => {
+        initCipherGame();
+    });
+}
+
+// Вернуться в музей из игры с шифром
+async function backFromCipher() {
+    await hideScreenWithAnimation(document.getElementById('cipher-game-screen'));
+    document.getElementById('cipherResultMessage').style.display = 'none';
+    showPrologue();
+}
+
+// Запуск четвертого квеста (шифр)
+async function startCipherQuest() {
+    await Promise.all([
+        hideScreenWithAnimation(document.getElementById('ar-content-school')),
+        hideScreenWithAnimation(document.getElementById('game-screen')),
+        hideScreenWithAnimation(document.getElementById('ornament-game-screen'))
+    ].filter(p => p !== undefined));
+    
+    document.getElementById('ar-scene-school').classList.add('hidden');
+    document.getElementById('ar-scene-vase').classList.add('hidden');
+    document.getElementById('ar-scene-ornament').classList.add('hidden');
+    document.getElementById('winMessage').style.display = 'none';
+    document.getElementById('ornamentResultMessage').style.display = 'none';
+    
+    if (currentARSystem) {
+        currentARSystem.stop();
+        currentARSystem = null;
+    }
+    
+    document.getElementById('ar-scene-cipher').classList.remove('hidden');
+    
+    const sceneEl = document.querySelector('#ar-scene-cipher a-scene');
+    
+    if (sceneEl.hasLoaded) {
+        initCipherAR(sceneEl);
+    } else {
+        sceneEl.addEventListener('loaded', function () {
+            initCipherAR(sceneEl);
+        });
+    }
+}
+
+function initCipherAR(sceneEl) {
+    const arSystem = sceneEl.systems["mindar-image-system"];
+    currentARSystem = arSystem;
+    
+    arSystem.start();
+    
+    const target = document.getElementById('cipher-target');
+    let isGameStarted = false;
+    
+    target.addEventListener('targetFound', () => {
+        console.log('Cipher target found');
+        if (!isGameStarted) {
+            isGameStarted = true;
+            arSystem.stop();
+            currentARSystem = null;
+            document.getElementById('ar-scene-cipher').classList.add('hidden');
+            showCipherGame();
+        }
+    });
+}
+
+function showCipherGame() {
+    const cipherScreen = document.getElementById('cipher-game-screen');
+    showScreenWithAnimation(cipherScreen);
+    initCipherGame();
+}
+
+// ===== ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ ШИФРА =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем обработчики для шифра с задержкой
+    setTimeout(() => {
+        const checkBtn = document.getElementById('cipherCheckBtn');
+        if (checkBtn) checkBtn.addEventListener('click', checkCipherPhrase);
+        
+        const clearBtn = document.getElementById('cipherClearBtn');
+        if (clearBtn) clearBtn.addEventListener('click', clearCipherInput);
+        
+        const hintBtn = document.getElementById('cipherHintBtn');
+        if (hintBtn) hintBtn.addEventListener('click', () => showCipherHint(true));
+        
+        const backBtn = document.getElementById('cipherBackBtn');
+        if (backBtn) backBtn.addEventListener('click', backFromCipher);
+        
+        const restartBtn = document.getElementById('cipherRestartBtn');
+        if (restartBtn) restartBtn.addEventListener('click', restartCipherGame);
+        
+        const backFromWinBtn = document.getElementById('cipherBackFromWinBtn');
+        if (backFromWinBtn) backFromWinBtn.addEventListener('click', backFromCipher);
+        
+        // Обработчик ввода с клавиатуры
+        const input = document.getElementById('cipherUserInput');
+        if (input) {
+            input.addEventListener('input', (e) => {
+                if (cipherGameState.gameCompleted) {
+                    e.target.value = cipherGameState.userInput;
+                    return;
+                }
+                
+                // Ограничиваем длину
+                if (e.target.value.length > cipherGameState.currentPhrase.length) {
+                    e.target.value = e.target.value.slice(0, cipherGameState.currentPhrase.length);
+                }
+                
+                // Приводим к нижнему регистру
+                e.target.value = e.target.value.toLowerCase().replace(/[^а-яё\s]/g, '');
+                
+                cipherGameState.userInput = e.target.value;
+                updateCipherProgress();
+            });
+        }
+    }, 500);
+});
+
+// Добавляем функции в глобальную область
+window.startCipherQuest = startCipherQuest;
+window.backFromCipher = backFromCipher;
+window.restartCipherGame = restartCipherGame;
 
 // Экспортируем функции для вызова из HTML
 window.startFirstQuest = startFirstQuest;
