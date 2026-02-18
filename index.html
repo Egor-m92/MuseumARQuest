@@ -37,6 +37,9 @@
             <h2>Музейка</h2>
             <p id="prologue-text">Добро пожаловать в Добрушский районный краеведческий музей. Ты готов пройти квест? Если да, то нажми кнопку и дай разрешение на доступ к камере.</p>
             <button class="btn-primary" onclick="startFirstQuest()">Начать путешествие</button>
+            <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);">
+                        📸 Финальное селфи с персонажами
+                    </button>
         </div>
     </div>
 
@@ -137,6 +140,7 @@
                     <button class="btn-primary next-quest-btn" onclick="startCipherQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
                         🔐 Расшифровать послание
                     </button>
+                    
                 </div>
             </div>
         </div>
@@ -347,6 +351,110 @@
         </div>
     </div>
 
+    <!-- Экран финального селфи (обновленный) -->
+<div id="final-game-screen" class="final-game-screen hidden">
+    <div class="final-game-header">
+        <h1>🎉 ФИНАЛЬНЫЙ САЛЮТ! 🎉</h1>
+        <p class="final-game-subtitle">Вы прошли все испытания! Настало время для праздничного селфи!</p>
+    </div>
+    
+    <div class="final-game-container">
+        <div class="final-celebration">
+            <div class="final-trophy">🏆</div>
+            <h2>Поздравляем, герой!</h2>
+            <p>Вы успешно завершили все квесты и заслужили праздничный салют!</p>
+        </div>
+        
+        <div class="final-selfie-preview" id="finalSelfiePreview">
+            <video id="finalSelfieVideo" autoplay playsinline muted></video>
+            <div class="final-selfie-overlay">
+                <div class="final-selfie-frame">
+                    <div class="final-selfie-text">Скажи "СЫР"!</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="final-controls">
+            <button id="finalStartCelebrationBtn" class="final-btn final-btn-primary" onclick="startFaceARSelfie()">
+                🎆 Запустить праздничный салют
+            </button>
+            <button id="finalCaptureSelfieBtn" class="final-btn final-btn-capture" onclick="captureCelebrationSelfie()" style="display: none;">
+                📸 Сделать праздничное фото
+            </button>
+            <button id="finalBackFromSelfieBtn" class="final-btn final-btn-back" onclick="backFromFinalSelfie()" style="display: none;">
+                🔙 Завершить праздник
+            </button>
+        </div>
+        
+        <div class="final-selfie-gallery" id="finalSelfieGallery">
+            <h3>🎊 Ваши праздничные фото</h3>
+            <div class="final-gallery-images" id="finalSelfieGalleryImages"></div>
+            <button class="final-btn final-btn-clear" onclick="clearSelfieGallery()">Очистить галерею</button>
+        </div>
+    </div>
+</div>
+
+<!-- AR сцена для финального селфи с распознаванием лица -->
+<div id="ar-scene-face" class="ar-container hidden">
+    <!-- Видео для face-api (скрытое, используется для детекции) -->
+    <video id="faceDetectionVideo" autoplay playsinline muted style="display: none;"></video>
+    
+    <!-- Основное видео для отображения -->
+    <div class="face-video-container">
+        <video id="faceDisplayVideo" autoplay playsinline muted></video>
+        
+        <!-- Canvas для отрисовки эффектов поверх видео -->
+        <canvas id="faceEffectsCanvas"></canvas>
+        
+        <!-- AR контент (логотип и салют) -->
+        <div id="faceARContent" class="face-ar-content">
+            <!-- Логотип музея (следит за лицом через CSS) -->
+            <div id="museumLogoFloat" class="museum-logo-float">
+                <div class="museum-logo-text">🏛️ ДОБРУШСКИЙ МУЗЕЙ</div>
+            </div>
+            
+            <!-- Звезды салюта -->
+            <div id="fireworksContainer" class="fireworks-container">
+                <div class="firework-star star1">⭐</div>
+                <div class="firework-star star2">✨</div>
+                <div class="firework-star star3">💫</div>
+                <div class="firework-star star4">🌟</div>
+                <div class="firework-star star5">🎆</div>
+            </div>
+            
+            <!-- Конфетти -->
+            <canvas id="confettiCanvas"></canvas>
+        </div>
+    </div>
+    
+    <!-- Инструкция -->
+    <div class="face-scan-hint" id="faceScanHint">
+        <div class="hint-text">😊 Посмотрите в камеру</div>
+        <div class="hint-subtext">Детекция лица...</div>
+    </div>
+    
+    <!-- Прогресс-бар обнаружения лица -->
+    <div class="face-detection-progress" id="faceDetectionProgress">
+        <div class="progress-bar-face" id="faceProgressBar"></div>
+    </div>
+    
+    <!-- Кнопки управления -->
+    <div class="face-controls" id="faceControls" style="display: none;">
+        <button class="face-btn face-btn-firework" onclick="toggleFireworks()">
+            🎆 Вкл/Выкл салют
+        </button>
+        <button class="face-btn face-btn-capture" onclick="takeFacePhotoWithEffects()">
+            📸 Сделать фото
+        </button>
+        <button class="face-btn face-btn-close" onclick="closeFaceAR()">
+            ✕ Завершить
+        </button>
+    </div>
+    
+    <!-- Счетчик обнаруженных лиц -->
+    <div class="face-counter" id="faceCounter">👤 0 лиц</div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
