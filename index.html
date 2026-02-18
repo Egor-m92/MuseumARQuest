@@ -9,9 +9,10 @@
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
-    <!-- MindAR Face Tracking (дополнительно) -->
+    <!-- MindAR Face Tracking -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
     
+    <!-- ПОДКЛЮЧЕНИЕ СТИЛЕЙ (ЭТО БЫЛО ПРОПУЩЕНО) -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,7 +20,7 @@
     <div id="loader" class="loader-screen">
         <div class="loader-content">
             <div class="museum-logo">
-                <img class="logo" src="./assets/logo.png" alt="Логотип музея">
+                <img class="logo" src="./assets/logo.png" alt="Логотип музея" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%23ffd700%22/><text x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%232c3e50%22>🏛️</text></svg>'">
             </div>
             <h1>История в смартфоне</h1>
             <div class="loading-bar">
@@ -52,11 +53,12 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false">
+                 device-orientation-permission-ui="enabled: false"
+                 embedded>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="school-target" mindar-image-target="targetIndex: 0"></a-entity>
         </a-scene>
-        <div class="scan-hint">Наведите камеру на основательницу школы для детей рабочих фабрики</div>
+        <div class="scan-hint">Наведите камеру на основательницу школы</div>
     </div>
 
     <!-- AR сцена для второй метки (ваза) -->
@@ -65,7 +67,8 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false">
+                 device-orientation-permission-ui="enabled: false"
+                 embedded>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="vase-target" mindar-image-target="targetIndex: 1"></a-entity>
         </a-scene>
@@ -78,7 +81,8 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false">
+                 device-orientation-permission-ui="enabled: false"
+                 embedded>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="ornament-target" mindar-image-target="targetIndex: 2"></a-entity>
         </a-scene>
@@ -91,14 +95,15 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false">
+                 device-orientation-permission-ui="enabled: false"
+                 embedded>
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="cipher-target" mindar-image-target="targetIndex: 3"></a-entity>
         </a-scene>
-        <div class="scan-hint">Наведите камеру на древний свиток с шифром</div>
+        <div class="scan-hint">Наведите камеру на древний свиток</div>
     </div>
 
-    <!-- AR сцена для финального селфи с отслеживанием лица (MindAR Face) -->
+    <!-- AR сцена для финального селфи с отслеживанием лица -->
     <div id="ar-scene-face-mindar" class="ar-container hidden">
         <a-scene mindar-face="autoStart: false;" 
                  color-space="sRGB" 
@@ -198,7 +203,7 @@
             
             <div class="ar-content-body">
                 <div class="content-image">
-                    <img src="assets/museum.jpg" alt="Историческое фото">
+                    <img src="assets/museum.jpg" alt="Историческое фото" onerror="this.src='https://via.placeholder.com/400x300/2c3e50/ffd700?text=Добрушский+музей'">
                     <div class="image-caption">Здание школы в наши дни</div>
                 </div>
                 
@@ -241,7 +246,7 @@
             <div class="game-panel vase-panel">
                 <h2 class="panel-title">🎯 Реставрация</h2>
                 <div class="vase-area" id="vaseArea">
-                    <img id="vaseImage" src="./assets/vaza.jpg" alt="Vase outline">
+                    <img id="vaseImage" src="./assets/vaza.jpg" alt="Vase outline" onerror="this.src='https://via.placeholder.com/200x300/c49a6c/ffffff?text=Ваза'">
                 </div>
                 <div class="vase-info">
                     <div class="vase-name">Славянская керамическая урна X века</div>
@@ -285,7 +290,7 @@
             <div class="ornament-pattern-section">
                 <h2 class="ornament-section-title">Образец</h2>
                 <div class="ornament-pattern-image-container">
-                    <img id="ornamentPatternImage" class="ornament-pattern-image" src="./assets/orname.jpg" alt="Белорусский орнамент">
+                    <img id="ornamentPatternImage" class="ornament-pattern-image" src="./assets/orname.jpg" alt="Белорусский орнамент" onerror="this.src='https://via.placeholder.com/200x200/ff3333/ffffff?text=Орнамент'">
                 </div>
                 <p class="ornament-pattern-caption">Традиционный белорусский узор</p>
             </div>
