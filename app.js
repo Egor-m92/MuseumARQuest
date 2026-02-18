@@ -31,7 +31,6 @@ const ornamentGameState = {
     targetCellsCount: 0
 };
 
-// Цвета для орнамента
 const ornamentColors = {
     cellColor: '#ff3333',
     gridColor: '#8b0000',
@@ -39,7 +38,6 @@ const ornamentColors = {
     backgroundColor: '#ffffff'
 };
 
-// Массив индексов ячеек для белорусского орнамента
 const ornamentTargetCells = [
     12, 36, 37, 38, 60, 61, 62, 63, 64, 86, 87, 88, 112,
     163, 139, 115, 91, 116, 141, 166, 191, 215, 239, 263, 238, 213, 188, 214, 189, 164, 190, 165, 140,
@@ -55,6 +53,41 @@ const ornamentTargetCells = [
     334, 333, 332, 331, 355, 379, 359, 383, 407, 406, 405, 404, 403, 380, 381, 382, 358, 357, 356, 304, 278, 303, 328, 352, 327, 302, 277, 252, 276, 301, 326, 300
 ];
 
+// ===== ИГРА С ШИФРОМ =====
+const cipherGameState = {
+    currentPhrase: '',
+    encodedPhrase: '',
+    userInput: '',
+    alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
+    phrases: [
+        'добрушскийрайон', 'музейнаятайна', 'древнийсвиток',
+        'историянарода', 'княгиняпаскевич', 'белорусскийорнамент',
+        'культурноенаследие', 'памятьпоколений', 'роднаязямля'
+    ],
+    hints: [
+        'Название района', 'Что хранит экспонаты', 'Древний документ',
+        'Прошлое народа', 'Основательница школы', 'Традиционный узор',
+        'Что передаем потомкам', 'Связь времен', 'Любимая земля'
+    ],
+    currentHint: '',
+    gameCompleted: false
+};
+
+// ===== ФИНАЛЬНАЯ СЦЕНА =====
+const faceARState = {
+    faceDetected: false,
+    faceCount: 0,
+    facePosition: { x: 0, y: 0, width: 0, height: 0 },
+    fireworksActive: true,
+    modelsLoaded: false,
+    detectionInterval: null,
+    photos: [],
+    maxPhotos: 9,
+    canvasCtx: null,
+    confettiCtx: null,
+    confettiParticles: []
+};
+
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 window.addEventListener('load', () => {
     setTimeout(() => {
@@ -64,22 +97,15 @@ window.addEventListener('load', () => {
 });
 
 // ===== ФУНКЦИИ АНИМАЦИИ =====
-
-// Функция для показа экрана с анимацией снизу
 function showScreenWithAnimation(screenElement) {
     screenElement.classList.remove('hidden');
     screenElement.classList.add('screen-slide-up');
-    
-    setTimeout(() => {
-        screenElement.classList.remove('screen-slide-up');
-    }, 500);
+    setTimeout(() => screenElement.classList.remove('screen-slide-up'), 500);
 }
 
-// Функция для скрытия экрана с анимацией вниз
 function hideScreenWithAnimation(screenElement) {
     return new Promise((resolve) => {
         screenElement.classList.add('screen-slide-down');
-        
         setTimeout(() => {
             screenElement.classList.add('hidden');
             screenElement.classList.remove('screen-slide-down');
@@ -88,7 +114,6 @@ function hideScreenWithAnimation(screenElement) {
     });
 }
 
-// Показать пролог
 function showPrologue() {
     const prologue = document.getElementById('prologue');
     showScreenWithAnimation(prologue);
@@ -100,7 +125,6 @@ function animatePrologueText() {
     const text = document.getElementById('prologue-text');
     const originalText = text.textContent;
     text.textContent = '';
-    
     let i = 0;
     const interval = setInterval(() => {
         if (i < originalText.length) {
@@ -115,36 +139,28 @@ function animatePrologueText() {
 // ===== ПЕРВЫЙ КВЕСТ (ШКОЛА) =====
 async function startFirstQuest() {
     await hideScreenWithAnimation(document.getElementById('prologue'));
-    
     document.getElementById('ar-scene-school').classList.remove('hidden');
     
     const sceneEl = document.querySelector('#ar-scene-school a-scene');
-    
     if (sceneEl.hasLoaded) {
         initSchoolAR(sceneEl);
     } else {
-        sceneEl.addEventListener('loaded', function () {
-            initSchoolAR(sceneEl);
-        });
+        sceneEl.addEventListener('loaded', () => initSchoolAR(sceneEl));
     }
 }
 
 function initSchoolAR(sceneEl) {
     const arSystem = sceneEl.systems["mindar-image-system"];
     currentARSystem = arSystem;
-    
     arSystem.start();
     
     const target = document.getElementById('school-target');
     let isContentVisible = false;
     
     target.addEventListener('targetFound', () => {
-        console.log('School target found');
         if (!isContentVisible) {
             isContentVisible = true;
-            setTimeout(() => {
-                showSchoolContent(arSystem);
-            }, 500);
+            setTimeout(() => showSchoolContent(arSystem), 500);
         }
     });
 }
@@ -152,16 +168,12 @@ function initSchoolAR(sceneEl) {
 function showSchoolContent(arSystem) {
     arSystem.stop();
     currentARSystem = null;
-    
     document.getElementById('ar-scene-school').classList.add('hidden');
-    
-    const content = document.getElementById('ar-content-school');
-    showScreenWithAnimation(content);
+    showScreenWithAnimation(document.getElementById('ar-content-school'));
 }
 
 async function closeSchoolContent() {
     await hideScreenWithAnimation(document.getElementById('ar-content-school'));
-    
     document.getElementById('ar-scene-school').classList.remove('hidden');
     
     const sceneEl = document.querySelector('#ar-scene-school a-scene');
@@ -173,7 +185,6 @@ async function closeSchoolContent() {
 // ===== ВТОРОЙ КВЕСТ (ВАЗА) =====
 async function startVaseQuest() {
     await hideScreenWithAnimation(document.getElementById('ar-content-school'));
-    
     document.getElementById('ar-scene-school').classList.add('hidden');
     
     if (currentARSystem) {
@@ -184,27 +195,22 @@ async function startVaseQuest() {
     document.getElementById('ar-scene-vase').classList.remove('hidden');
     
     const sceneEl = document.querySelector('#ar-scene-vase a-scene');
-    
     if (sceneEl.hasLoaded) {
         initVaseAR(sceneEl);
     } else {
-        sceneEl.addEventListener('loaded', function () {
-            initVaseAR(sceneEl);
-        });
+        sceneEl.addEventListener('loaded', () => initVaseAR(sceneEl));
     }
 }
 
 function initVaseAR(sceneEl) {
     const arSystem = sceneEl.systems["mindar-image-system"];
     currentARSystem = arSystem;
-    
     arSystem.start();
     
     const target = document.getElementById('vase-target');
     let isGameStarted = false;
     
     target.addEventListener('targetFound', () => {
-        console.log('Vase target found');
         if (!isGameStarted) {
             isGameStarted = true;
             arSystem.stop();
@@ -216,8 +222,7 @@ function initVaseAR(sceneEl) {
 }
 
 function startGame() {
-    const gameScreen = document.getElementById('game-screen');
-    showScreenWithAnimation(gameScreen);
+    showScreenWithAnimation(document.getElementById('game-screen'));
     initGame();
 }
 
@@ -240,27 +245,22 @@ async function startOrnamentQuest() {
     document.getElementById('ar-scene-ornament').classList.remove('hidden');
     
     const sceneEl = document.querySelector('#ar-scene-ornament a-scene');
-    
     if (sceneEl.hasLoaded) {
         initOrnamentAR(sceneEl);
     } else {
-        sceneEl.addEventListener('loaded', function () {
-            initOrnamentAR(sceneEl);
-        });
+        sceneEl.addEventListener('loaded', () => initOrnamentAR(sceneEl));
     }
 }
 
 function initOrnamentAR(sceneEl) {
     const arSystem = sceneEl.systems["mindar-image-system"];
     currentARSystem = arSystem;
-    
     arSystem.start();
     
     const target = document.getElementById('ornament-target');
     let isGameStarted = false;
     
     target.addEventListener('targetFound', () => {
-        console.log('Ornament target found');
         if (!isGameStarted) {
             isGameStarted = true;
             arSystem.stop();
@@ -272,9 +272,61 @@ function initOrnamentAR(sceneEl) {
 }
 
 function showOrnamentGame() {
-    const ornamentScreen = document.getElementById('ornament-game-screen');
-    showScreenWithAnimation(ornamentScreen);
+    showScreenWithAnimation(document.getElementById('ornament-game-screen'));
     initOrnamentGame();
+}
+
+// ===== ЧЕТВЕРТЫЙ КВЕСТ (ШИФР) =====
+async function startCipherQuest() {
+    await Promise.all([
+        hideScreenWithAnimation(document.getElementById('ar-content-school')),
+        hideScreenWithAnimation(document.getElementById('game-screen')),
+        hideScreenWithAnimation(document.getElementById('ornament-game-screen'))
+    ]);
+    
+    document.getElementById('ar-scene-school').classList.add('hidden');
+    document.getElementById('ar-scene-vase').classList.add('hidden');
+    document.getElementById('ar-scene-ornament').classList.add('hidden');
+    document.getElementById('winMessage').style.display = 'none';
+    document.getElementById('ornamentResultMessage').style.display = 'none';
+    
+    if (currentARSystem) {
+        currentARSystem.stop();
+        currentARSystem = null;
+    }
+    
+    document.getElementById('ar-scene-cipher').classList.remove('hidden');
+    
+    const sceneEl = document.querySelector('#ar-scene-cipher a-scene');
+    if (sceneEl.hasLoaded) {
+        initCipherAR(sceneEl);
+    } else {
+        sceneEl.addEventListener('loaded', () => initCipherAR(sceneEl));
+    }
+}
+
+function initCipherAR(sceneEl) {
+    const arSystem = sceneEl.systems["mindar-image-system"];
+    currentARSystem = arSystem;
+    arSystem.start();
+    
+    const target = document.getElementById('cipher-target');
+    let isGameStarted = false;
+    
+    target.addEventListener('targetFound', () => {
+        if (!isGameStarted) {
+            isGameStarted = true;
+            arSystem.stop();
+            currentARSystem = null;
+            document.getElementById('ar-scene-cipher').classList.add('hidden');
+            showCipherGame();
+        }
+    });
+}
+
+function showCipherGame() {
+    showScreenWithAnimation(document.getElementById('cipher-game-screen'));
+    initCipherGame();
 }
 
 // ===== ИГРА С ВАЗОЙ (ЛОГИКА) =====
@@ -331,10 +383,7 @@ function initGame() {
             vaseImage.src = processedVaseCanvas.toDataURL();
             vaseImage.style.opacity = '0.3';
             vaseImage.style.display = 'block';
-            
-            setTimeout(() => {
-                createPuzzlePieces(fallbackImg);
-            }, 100);
+            setTimeout(() => createPuzzlePieces(fallbackImg), 100);
         };
         fallbackImg.src = gameState.vaseImageUrl;
     };
@@ -347,7 +396,6 @@ function initGame() {
 function removeWhiteBackground(srcImage) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-
     canvas.width = srcImage.width;
     canvas.height = srcImage.height;
     ctx.drawImage(srcImage, 0, 0);
@@ -356,15 +404,10 @@ function removeWhiteBackground(srcImage) {
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        if (r > 240 && g > 240 && b > 240) {
-            data[i + 3] = 0;
-        }
-        else if (r > 200 && g > 200 && b > 200 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) {
-            data[i + 3] = 0;
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if ((r > 240 && g > 240 && b > 240) || 
+            (r > 200 && g > 200 && b > 200 && Math.abs(r-g) < 20 && Math.abs(g-b) < 20)) {
+            data[i+3] = 0;
         }
     }
 
@@ -376,31 +419,23 @@ function getImageDisplayRect() {
     const img = document.getElementById('vaseImage');
     const rect = img.getBoundingClientRect();
     const vaseRect = vaseArea.getBoundingClientRect();
-    
     return {
         left: rect.left - vaseRect.left,
         top: rect.top - vaseRect.top,
         width: rect.width,
-        height: rect.height,
-        right: rect.right - vaseRect.left,
-        bottom: rect.bottom - vaseRect.top
+        height: rect.height
     };
 }
 
 function createPuzzlePieces(srcImage) {
-    const rows = 4;
-    const cols = 3;
-    
+    const rows = 4, cols = 3;
     const displayRect = getImageDisplayRect();
     gameState.imageActualRect = displayRect;
     
     const pieceWidth = displayRect.width / cols;
     const pieceHeight = displayRect.height / rows;
-
     const processedCanvas = removeWhiteBackground(srcImage);
     const processedImageUrl = processedCanvas.toDataURL();
-
-    fragmentsArea.offsetHeight;
     
     const fragmentsRect = fragmentsArea.getBoundingClientRect();
     const panelWidth = fragmentsRect.width;
@@ -433,10 +468,8 @@ function createPuzzlePieces(srcImage) {
                 ctx.clearRect(0, 0, pieceWidth, pieceHeight);
                 ctx.drawImage(pieceImg, sx, sy, sWidth, sHeight, 0, 0, pieceWidth, pieceHeight);
                 addCeramicTexture(ctx, pieceWidth, pieceHeight);
-
                 piece.style.backgroundImage = `url(${canvas.toDataURL()})`;
                 piece.style.backgroundSize = 'cover';
-                piece.style.backgroundColor = 'transparent';
             };
             pieceImg.src = processedImageUrl;
 
@@ -444,18 +477,12 @@ function createPuzzlePieces(srcImage) {
             const maxX = Math.max(margin, panelWidth - pieceWidth - margin * 2);
             const maxY = Math.max(margin, panelHeight - pieceHeight - margin * 2);
             
-            const randomX = margin + Math.random() * maxX;
-            const randomY = margin + Math.random() * maxY;
-
-            piece.style.left = randomX + 'px';
-            piece.style.top = randomY + 'px';
-
-            const targetX = displayRect.left + (col * pieceWidth) + (pieceWidth / 2);
-            const targetY = displayRect.top + (row * pieceHeight) + (pieceHeight / 2);
+            piece.style.left = (margin + Math.random() * maxX) + 'px';
+            piece.style.top = (margin + Math.random() * maxY) + 'px';
 
             gameState.targetPositions.push({
-                x: targetX,
-                y: targetY,
+                x: displayRect.left + (col * pieceWidth) + (pieceWidth / 2),
+                y: displayRect.top + (row * pieceHeight) + (pieceHeight / 2),
                 tolerance: Math.min(pieceWidth, pieceHeight) * 0.4
             });
 
@@ -469,15 +496,15 @@ function createPuzzlePieces(srcImage) {
 function addCeramicTexture(ctx, width, height) {
     ctx.globalCompositeOperation = 'multiply';
     const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, 'rgba(139, 69, 19, 0.3)');
-    gradient.addColorStop(0.5, 'rgba(160, 82, 45, 0.2)');
-    gradient.addColorStop(1, 'rgba(92, 64, 51, 0.3)');
+    gradient.addColorStop(0, 'rgba(139,69,19,0.3)');
+    gradient.addColorStop(0.5, 'rgba(160,82,45,0.2)');
+    gradient.addColorStop(1, 'rgba(92,64,51,0.3)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
     ctx.globalCompositeOperation = 'source-over';
 }
 
-function makeDraggable(element, index) {
+function makeDraggable(element) {
     element.addEventListener('mousedown', startDrag);
     element.addEventListener('touchstart', startDrag, {passive: false});
 }
@@ -500,12 +527,9 @@ function startDrag(e) {
     gameState.dragOffset.x = clientX - rect.left;
     gameState.dragOffset.y = clientY - rect.top;
 
-    const currentLeft = rect.left;
-    const currentTop = rect.top;
-
     document.body.appendChild(element);
-    element.style.left = currentLeft + 'px';
-    element.style.top = currentTop + 'px';
+    element.style.left = rect.left + 'px';
+    element.style.top = rect.top + 'px';
 
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', endDrag);
@@ -520,11 +544,8 @@ function drag(e) {
     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
 
-    const newLeft = clientX - gameState.dragOffset.x;
-    const newTop = clientY - gameState.dragOffset.y;
-
-    gameState.draggedPiece.style.left = newLeft + 'px';
-    gameState.draggedPiece.style.top = newTop + 'px';
+    gameState.draggedPiece.style.left = (clientX - gameState.dragOffset.x) + 'px';
+    gameState.draggedPiece.style.top = (clientY - gameState.dragOffset.y) + 'px';
 }
 
 function endDrag(e) {
@@ -553,17 +574,12 @@ function checkPlacement(piece, index) {
     const pieceCenterX = pieceRect.left + pieceRect.width/2 - vaseRect.left;
     const pieceCenterY = pieceRect.top + pieceRect.height/2 - vaseRect.top;
 
-    const isOverVase = pieceRect.left >= vaseRect.left - 100 &&
-        pieceRect.right <= vaseRect.right + 100 &&
-        pieceRect.top >= vaseRect.top - 100 &&
-        pieceRect.bottom <= vaseRect.bottom + 100;
-
     const distance = Math.sqrt(
         Math.pow(pieceCenterX - target.x, 2) + 
         Math.pow(pieceCenterY - target.y, 2)
     );
 
-    if (isOverVase && distance < target.tolerance) {
+    if (distance < target.tolerance) {
         placePiece(piece, index, target);
     } else {
         returnToFragments(piece);
@@ -575,11 +591,6 @@ function placePiece(piece, index, target) {
     piece.style.left = (target.x - piece.offsetWidth/2) + 'px';
     piece.style.top = (target.y - piece.offsetHeight/2) + 'px';
     piece.classList.add('placed');
-
-    piece.style.animation = 'pulse 0.5s ease';
-    setTimeout(() => {
-        piece.style.animation = '';
-    }, 500);
 
     gameState.placedPieces++;
     updateUI();
@@ -594,18 +605,12 @@ function returnToFragments(piece) {
     
     const fragmentsRect = fragmentsArea.getBoundingClientRect();
     const pieceRect = piece.getBoundingClientRect();
-    const pieceWidth = pieceRect.width;
-    const pieceHeight = pieceRect.height;
-    
     const panelWidth = fragmentsRect.width;
     const panelHeight = fragmentsRect.height;
-    
     const margin = 5;
-    const maxX = Math.max(margin, panelWidth - pieceWidth - margin * 2);
-    const maxY = Math.max(margin, panelHeight - pieceHeight - margin * 2);
     
-    piece.style.left = (margin + Math.random() * maxX) + 'px';
-    piece.style.top = (margin + Math.random() * maxY) + 'px';
+    piece.style.left = (margin + Math.random() * Math.max(margin, panelWidth - pieceRect.width - margin * 2)) + 'px';
+    piece.style.top = (margin + Math.random() * Math.max(margin, panelHeight - pieceRect.height - margin * 2)) + 'px';
 }
 
 function updateUI() {
@@ -616,7 +621,6 @@ function updateUI() {
     const accuracy = Math.round((gameState.placedPieces / gameState.totalPieces) * 100);
     document.getElementById('accuracy').textContent = accuracy + '%';
     document.getElementById('progressFill').style.width = accuracy + '%';
-
     vaseImage.style.opacity = 0.3 + (accuracy / 100) * 0.7;
 }
 
@@ -635,11 +639,7 @@ function showWin() {
     const winMessage = document.getElementById('winMessage');
     winMessage.style.display = 'flex';
     winMessage.classList.add('screen-slide-up');
-    
-    setTimeout(() => {
-        winMessage.classList.remove('screen-slide-up');
-    }, 500);
-    
+    setTimeout(() => winMessage.classList.remove('screen-slide-up'), 500);
     vaseImage.style.opacity = '1';
 }
 
@@ -689,7 +689,7 @@ function initOrnamentGame() {
 function getOrnamentCanvasSize() {
     const isMobile = window.innerWidth <= 768;
     const maxSize = Math.min(window.innerWidth - 40, 500);
-    return isMobile ? Math.min(maxSize, 400) : 400;
+    return isMobile ? Math.min(maxSize, 300) : 400;
 }
 
 function drawOrnamentGame() {
@@ -697,7 +697,6 @@ function drawOrnamentGame() {
     const ctx = canvas.getContext('2d');
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
     ctx.fillStyle = ornamentColors.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -707,7 +706,6 @@ function drawOrnamentGame() {
 }
 
 function drawOrnamentGrid(ctx) {
-    const canvas = document.getElementById('ornamentGameCanvas');
     ctx.strokeStyle = ornamentColors.gridColor;
     ctx.lineWidth = Math.max(1, ornamentGameState.canvasSize / 400);
     
@@ -715,13 +713,13 @@ function drawOrnamentGrid(ctx) {
         const x = i * ornamentGameState.cellSize;
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
+        ctx.lineTo(x, ornamentGameState.canvasSize);
         ctx.stroke();
         
         const y = i * ornamentGameState.cellSize;
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
+        ctx.lineTo(ornamentGameState.canvasSize, y);
         ctx.stroke();
     }
 }
@@ -731,7 +729,6 @@ function drawOrnamentPlayerCells(ctx) {
         if (ornamentGameState.playerGrid[i]) {
             const row = Math.floor(i / ornamentGameState.gridSize);
             const col = i % ornamentGameState.gridSize;
-            
             ctx.fillStyle = ornamentColors.cellColor;
             ctx.fillRect(
                 col * ornamentGameState.cellSize + 1,
@@ -745,12 +742,10 @@ function drawOrnamentPlayerCells(ctx) {
 
 function drawOrnamentTargetPattern(ctx) {
     ctx.globalAlpha = 0.1;
-    
     for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
         if (ornamentGameState.targetGrid[i]) {
             const row = Math.floor(i / ornamentGameState.gridSize);
             const col = i % ornamentGameState.gridSize;
-            
             ctx.fillStyle = ornamentColors.gridColor;
             ctx.fillRect(
                 col * ornamentGameState.cellSize + 1,
@@ -760,14 +755,12 @@ function drawOrnamentTargetPattern(ctx) {
             );
         }
     }
-    
     ctx.globalAlpha = 1.0;
 }
 
 function getOrnamentCellIndex(x, y) {
     const col = Math.floor(x / ornamentGameState.cellSize);
     const row = Math.floor(y / ornamentGameState.cellSize);
-    
     if (col >= 0 && col < ornamentGameState.gridSize && row >= 0 && row < ornamentGameState.gridSize) {
         return row * ornamentGameState.gridSize + col;
     }
@@ -776,9 +769,7 @@ function getOrnamentCellIndex(x, y) {
 
 function handleOrnamentCellClick(cellIndex) {
     if (ornamentGameState.gameCompleted || cellIndex === -1) return;
-    
     ornamentGameState.playerGrid[cellIndex] = !ornamentGameState.playerGrid[cellIndex];
-    
     updateOrnamentUI();
     drawOrnamentGame();
 }
@@ -788,20 +779,13 @@ function updateOrnamentUI() {
     document.getElementById('ornamentFilledCount').textContent = filledCount;
     
     const statusDisplay = document.getElementById('ornamentStatusDisplay');
-    if (ornamentGameState.gameCompleted) {
-        statusDisplay.textContent = 'Завершено!';
-        statusDisplay.style.color = '#4a7c4a';
-    } else {
-        statusDisplay.textContent = 'В процессе';
-        statusDisplay.style.color = '#ffcc00';
-    }
+    statusDisplay.textContent = ornamentGameState.gameCompleted ? 'Завершено!' : 'В процессе';
+    statusDisplay.style.color = ornamentGameState.gameCompleted ? '#4a7c4a' : '#ffcc00';
 }
 
 function checkOrnamentPattern() {
     for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
-        if (ornamentGameState.targetGrid[i] && !ornamentGameState.playerGrid[i]) {
-            return false;
-        }
+        if (ornamentGameState.targetGrid[i] && !ornamentGameState.playerGrid[i]) return false;
     }
     return true;
 }
@@ -809,46 +793,36 @@ function checkOrnamentPattern() {
 function showOrnamentResult(success) {
     if (success) {
         const accuracy = calculateOrnamentAccuracy();
-        document.getElementById('ornamentResultDetails').textContent = 
-            `Вы успешно повторили орнамент! Точность: ${accuracy}%`;
+        document.getElementById('ornamentResultDetails').textContent = `Точность: ${accuracy}%`;
         
         const resultMessage = document.getElementById('ornamentResultMessage');
         resultMessage.style.display = 'flex';
         resultMessage.classList.add('screen-slide-up');
-        
-        setTimeout(() => {
-            resultMessage.classList.remove('screen-slide-up');
-        }, 500);
+        setTimeout(() => resultMessage.classList.remove('screen-slide-up'), 500);
         
         ornamentGameState.gameCompleted = true;
         updateOrnamentUI();
     } else {
         const statusDisplay = document.getElementById('ornamentStatusDisplay');
-        const originalStatus = statusDisplay.textContent;
+        const originalText = statusDisplay.textContent;
         statusDisplay.textContent = 'Неверно!';
         statusDisplay.style.color = '#ff3333';
-        
         setTimeout(() => {
-            statusDisplay.textContent = originalStatus;
+            statusDisplay.textContent = originalText;
             statusDisplay.style.color = ornamentGameState.gameCompleted ? '#4a7c4a' : '#ffcc00';
         }, 1500);
     }
 }
 
 function calculateOrnamentAccuracy() {
-    let correct = 0;
-    let totalTarget = 0;
-    
+    let correct = 0, total = 0;
     for (let i = 0; i < ornamentGameState.targetGrid.length; i++) {
         if (ornamentGameState.targetGrid[i]) {
-            totalTarget++;
-            if (ornamentGameState.playerGrid[i]) {
-                correct++;
-            }
+            total++;
+            if (ornamentGameState.playerGrid[i]) correct++;
         }
     }
-    
-    return totalTarget > 0 ? Math.round((correct / totalTarget) * 100) : 0;
+    return total > 0 ? Math.round((correct / total) * 100) : 0;
 }
 
 function showOrnamentHint() {
@@ -871,7 +845,6 @@ function showOrnamentHint() {
         let blinkCount = 0;
         const blinkInterval = setInterval(() => {
             drawOrnamentGame();
-            
             ctx.save();
             ctx.fillStyle = blinkCount % 2 === 0 ? ornamentColors.hintColor : ornamentColors.cellColor;
             ctx.globalAlpha = 0.5;
@@ -910,189 +883,41 @@ async function backFromOrnament() {
     showPrologue();
 }
 
-// ===== ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ ОРНАМЕНТА =====
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        const canvas = document.getElementById('ornamentGameCanvas');
-        if (canvas) {
-            canvas.addEventListener('click', function(e) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                
-                const x = (e.clientX - rect.left) * scaleX;
-                const y = (e.clientY - rect.top) * scaleY;
-                
-                const cellIndex = getOrnamentCellIndex(x, y);
-                handleOrnamentCellClick(cellIndex);
-            });
-            
-            canvas.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('click', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            });
-        }
-        
-        const clearBtn = document.getElementById('ornamentClearBtn');
-        if (clearBtn) clearBtn.addEventListener('click', clearOrnamentGame);
-        
-        const checkBtn = document.getElementById('ornamentCheckBtn');
-        if (checkBtn) checkBtn.addEventListener('click', () => {
-            const success = checkOrnamentPattern();
-            showOrnamentResult(success);
-        });
-        
-        const hintBtn = document.getElementById('ornamentHintBtn');
-        if (hintBtn) hintBtn.addEventListener('click', showOrnamentHint);
-        
-        const backBtn = document.getElementById('ornamentBackBtn');
-        if (backBtn) backBtn.addEventListener('click', backFromOrnament);
-        
-        const restartBtn = document.getElementById('ornamentRestartBtn');
-        if (restartBtn) restartBtn.addEventListener('click', resetOrnamentGame);
-        
-        const backFromWinBtn = document.getElementById('ornamentBackFromWinBtn');
-        if (backFromWinBtn) backFromWinBtn.addEventListener('click', backFromOrnament);
-    }, 500);
-});
-
-// Обработка изменения размера окна для орнамента
-window.addEventListener('resize', () => {
-    if (!document.getElementById('ornament-game-screen').classList.contains('hidden')) {
-        clearTimeout(window.ornamentResizeTimeout);
-        window.ornamentResizeTimeout = setTimeout(() => {
-            ornamentGameState.canvasSize = getOrnamentCanvasSize();
-            const canvas = document.getElementById('ornamentGameCanvas');
-            canvas.width = ornamentGameState.canvasSize;
-            canvas.height = ornamentGameState.canvasSize;
-            ornamentGameState.cellSize = ornamentGameState.canvasSize / ornamentGameState.gridSize;
-            drawOrnamentGame();
-        }, 250);
-    }
-});
-
-// Обработка изменения размера окна для вазы
-window.addEventListener('resize', () => {
-    if (gameState.pieces.length > 0 && gameState.placedPieces < gameState.totalPieces) {
-        const rows = 4;
-        const cols = 3;
-        const displayRect = getImageDisplayRect();
-        
-        for (let i = 0; i < gameState.pieces.length; i++) {
-            if (!gameState.pieces[i].classList.contains('placed')) {
-                const row = Math.floor(i / cols);
-                const col = i % cols;
-                const pieceWidth = displayRect.width / cols;
-                const pieceHeight = displayRect.height / rows;
-                
-                gameState.targetPositions[i] = {
-                    x: displayRect.left + (col * pieceWidth) + (pieceWidth / 2),
-                    y: displayRect.top + (row * pieceHeight) + (pieceHeight / 2),
-                    tolerance: Math.min(pieceWidth, pieceHeight) * 0.4
-                };
-            }
-        }
-        
-        gameState.pieces.forEach((piece, i) => {
-            if (piece.classList.contains('placed')) {
-                const row = Math.floor(i / cols);
-                const col = i % cols;
-                const pieceWidth = displayRect.width / cols;
-                const pieceHeight = displayRect.height / rows;
-                const targetX = displayRect.left + (col * pieceWidth) + (pieceWidth / 2);
-                const targetY = displayRect.top + (row * pieceHeight) + (pieceHeight / 2);
-                
-                piece.style.left = (targetX - piece.offsetWidth/2) + 'px';
-                piece.style.top = (targetY - piece.offsetHeight/2) + 'px';
-            }
-        });
-    }
-});
-// ===== ИГРА РАСШИФРУЙ ФРАЗУ =====
-const cipherGameState = {
-    currentPhrase: '',
-    encodedPhrase: '',
-    userInput: '',
-    alphabet: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя',
-    phrases: [
-        'добрушскийрайон',
-        'музейнаятайна',
-        'древнийсвиток',
-        'историянарода',
-        'княгиняпаскевич',
-        'белорусскийорнамент',
-        'культурноенаследие',
-        'памятьпоколений',
-        'роднаязямля'
-    ],
-    hints: [
-        'Название района',
-        'Что хранит экспонаты',
-        'Древний документ',
-        'Прошлое народа',
-        'Основательница школы',
-        'Традиционный узор',
-        'Что передаем потомкам',
-        'Связь времен',
-        'Любимая земля'
-    ],
-    currentHint: '',
-    gameCompleted: false
-};
-
-// Инициализация игры с шифром
+// ===== ИГРА С ШИФРОМ (ЛОГИКА) =====
 function initCipherGame() {
-    // Выбираем случайную фразу
     const randomIndex = Math.floor(Math.random() * cipherGameState.phrases.length);
     cipherGameState.currentPhrase = cipherGameState.phrases[randomIndex];
     cipherGameState.currentHint = cipherGameState.hints[randomIndex];
     cipherGameState.userInput = '';
     cipherGameState.gameCompleted = false;
     
-    // Шифруем фразу (цифры вместо букв)
     encodePhrase();
     
-    // Обновляем интерфейс
     document.getElementById('cipherEncoded').textContent = cipherGameState.encodedPhrase;
     document.getElementById('cipherHint').textContent = `💡 Подсказка: ${cipherGameState.currentHint}`;
     document.getElementById('cipherUserInput').value = '';
     
-    // Создаем клавиатуру с буквами
     createCipherKeyboard();
-    
-    // Создаем ключ шифра
     createCipherKey();
-    
     updateCipherProgress();
 }
 
-// Шифрование фразы (каждая буква -> номер в алфавите)
 function encodePhrase() {
     let encoded = '';
     for (let i = 0; i < cipherGameState.currentPhrase.length; i++) {
         const char = cipherGameState.currentPhrase[i];
         const index = cipherGameState.alphabet.indexOf(char);
         if (index !== -1) {
-            // Добавляем ведущий ноль для двузначных чисел
             encoded += (index + 1).toString().padStart(2, '0') + ' ';
-        } else {
-            encoded += char + ' ';
         }
     }
     cipherGameState.encodedPhrase = encoded.trim();
 }
 
-// Создание ключа шифра
 function createCipherKey() {
     const keyGrid = document.getElementById('cipherKey');
     keyGrid.innerHTML = '';
     
-    // Показываем соответствие цифр и букв (1-33 для русского алфавита)
     for (let i = 1; i <= 33; i++) {
         const keyItem = document.createElement('div');
         keyItem.className = 'cipher-key-item';
@@ -1111,14 +936,11 @@ function createCipherKey() {
     }
 }
 
-// Создание клавиатуры с буквами
 function createCipherKeyboard() {
     const lettersContainer = document.getElementById('cipherLetters');
     lettersContainer.innerHTML = '';
     
-    const alphabetArray = cipherGameState.alphabet.split('');
-    
-    alphabetArray.forEach(letter => {
+    cipherGameState.alphabet.split('').forEach(letter => {
         const btn = document.createElement('button');
         btn.className = 'cipher-letter-btn';
         btn.textContent = letter.toUpperCase();
@@ -1126,271 +948,692 @@ function createCipherKeyboard() {
         lettersContainer.appendChild(btn);
     });
     
-    // Добавляем кнопку пробела
     const spaceBtn = document.createElement('button');
     spaceBtn.className = 'cipher-letter-btn';
     spaceBtn.textContent = '␣';
-    spaceBtn.style.width = '90px';
     spaceBtn.onclick = () => addLetterToInput(' ');
     lettersContainer.appendChild(spaceBtn);
     
-    // Добавляем кнопку удаления
     const backspaceBtn = document.createElement('button');
     backspaceBtn.className = 'cipher-letter-btn';
     backspaceBtn.textContent = '⌫';
-    backspaceBtn.style.width = '90px';
     backspaceBtn.onclick = removeLastLetter;
     lettersContainer.appendChild(backspaceBtn);
 }
 
-// Добавить букву в поле ввода
 function addLetterToInput(letter) {
     if (cipherGameState.gameCompleted) return;
-    
     const input = document.getElementById('cipherUserInput');
-    const currentValue = input.value;
-    
-    if (currentValue.length < cipherGameState.currentPhrase.length) {
-        input.value = currentValue + letter;
+    if (input.value.length < cipherGameState.currentPhrase.length) {
+        input.value += letter;
         cipherGameState.userInput = input.value;
         updateCipherProgress();
     }
 }
 
-// Удалить последнюю букву
 function removeLastLetter() {
     if (cipherGameState.gameCompleted) return;
-    
     const input = document.getElementById('cipherUserInput');
     input.value = input.value.slice(0, -1);
     cipherGameState.userInput = input.value;
     updateCipherProgress();
 }
 
-// Обновить прогресс
 function updateCipherProgress() {
     const input = document.getElementById('cipherUserInput').value;
     const targetLength = cipherGameState.currentPhrase.length;
-    const currentLength = input.length;
     
-    document.getElementById('cipherProgress').textContent = `${currentLength}/${targetLength}`;
+    document.getElementById('cipherProgress').textContent = `${input.length}/${targetLength}`;
+    document.getElementById('cipherProgressFill').style.width = (input.length / targetLength * 100) + '%';
     
-    const percentage = (currentLength / targetLength) * 100;
-    document.getElementById('cipherProgressFill').style.width = percentage + '%';
-    
-    // Подсвечиваем правильные буквы на клавиатуре
     highlightCorrectLetters();
 }
 
-// Подсветка правильных букв
 function highlightCorrectLetters() {
     const input = document.getElementById('cipherUserInput').value;
-    const buttons = document.querySelectorAll('.cipher-letter-btn');
-    
-    buttons.forEach(btn => {
+    document.querySelectorAll('.cipher-letter-btn').forEach(btn => {
         if (btn.textContent.length === 1 && btn.textContent !== '␣' && btn.textContent !== '⌫') {
             const letter = btn.textContent.toLowerCase();
-            // Проверяем, есть ли эта буква в целевой фразе на текущей позиции или дальше
-            if (cipherGameState.currentPhrase.includes(letter)) {
-                btn.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
-            } else {
-                btn.style.background = 'linear-gradient(135deg, #8b5a2b, #b8860b)';
-            }
+            btn.style.background = cipherGameState.currentPhrase.includes(letter) 
+                ? 'linear-gradient(135deg, #27ae60, #2ecc71)'
+                : 'linear-gradient(135deg, #8b5a2b, #b8860b)';
         }
     });
 }
 
-// Проверка расшифровки
 function checkCipherPhrase() {
-    const userInput = document.getElementById('cipherUserInput').value;
-    const normalizedInput = userInput.toLowerCase().replace(/\s+/g, '');
-    const normalizedTarget = cipherGameState.currentPhrase.toLowerCase();
+    const userInput = document.getElementById('cipherUserInput').value.toLowerCase().replace(/\s+/g, '');
+    const target = cipherGameState.currentPhrase.toLowerCase();
     
-    if (normalizedInput === normalizedTarget) {
-        // Победа!
+    if (userInput === target) {
         showCipherWin();
     } else {
-        // Неправильно
-        const statusDisplay = document.getElementById('cipherUserInput');
-        statusDisplay.style.borderColor = '#e74c3c';
-        statusDisplay.style.boxShadow = '0 0 10px rgba(231, 76, 60, 0.5)';
-        
-        setTimeout(() => {
-            statusDisplay.style.borderColor = '#c49a6c';
-            statusDisplay.style.boxShadow = 'none';
-        }, 1000);
-        
-        // Показываем сколько букв правильно
+        const input = document.getElementById('cipherUserInput');
+        input.style.borderColor = '#e74c3c';
+        setTimeout(() => input.style.borderColor = '#c49a6c', 1000);
         showCipherHint(false);
     }
 }
 
-// Показать подсказку
 function showCipherHint(isExplicit = true) {
     const input = document.getElementById('cipherUserInput').value;
     
     if (isExplicit) {
-        // Показываем первую неправильную букву
         for (let i = 0; i < cipherGameState.currentPhrase.length; i++) {
             if (i >= input.length || input[i] !== cipherGameState.currentPhrase[i]) {
-                // Мигаем нужной буквой на клавиатуре
                 const targetLetter = cipherGameState.currentPhrase[i];
-                const buttons = document.querySelectorAll('.cipher-letter-btn');
-                
-                buttons.forEach(btn => {
+                document.querySelectorAll('.cipher-letter-btn').forEach(btn => {
                     if (btn.textContent.toLowerCase() === targetLetter) {
-                        btn.style.animation = 'pulse 0.5s ease infinite';
-                        setTimeout(() => {
-                            btn.style.animation = '';
-                        }, 2000);
+                        btn.style.animation = 'pulse 0.5s infinite';
+                        setTimeout(() => btn.style.animation = '', 2000);
                     }
                 });
                 break;
             }
         }
     } else {
-        // Показываем количество правильных букв
         let correctCount = 0;
         for (let i = 0; i < Math.min(input.length, cipherGameState.currentPhrase.length); i++) {
-            if (input[i] === cipherGameState.currentPhrase[i]) {
-                correctCount++;
-            }
+            if (input[i] === cipherGameState.currentPhrase[i]) correctCount++;
         }
-        
-        // Временное сообщение
         const hintInfo = document.getElementById('cipherHint');
         const originalText = hintInfo.innerHTML;
-        hintInfo.innerHTML = `💡 Правильно: ${correctCount} из ${cipherGameState.currentPhrase.length} букв`;
-        
-        setTimeout(() => {
-            hintInfo.innerHTML = originalText;
-        }, 2000);
+        hintInfo.innerHTML = `💡 Правильно: ${correctCount} из ${cipherGameState.currentPhrase.length}`;
+        setTimeout(() => hintInfo.innerHTML = originalText, 2000);
     }
 }
 
-// Показать окно победы
 function showCipherWin() {
     cipherGameState.gameCompleted = true;
-    
-    document.getElementById('cipherResultDetails').textContent = 
-        'Вы успешно расшифровали древнее послание!';
-    document.getElementById('cipherResultPhrase').textContent = 
-        cipherGameState.currentPhrase.toUpperCase();
+    document.getElementById('cipherResultDetails').textContent = 'Вы расшифровали послание!';
+    document.getElementById('cipherResultPhrase').textContent = cipherGameState.currentPhrase.toUpperCase();
     
     const resultMessage = document.getElementById('cipherResultMessage');
     resultMessage.style.display = 'flex';
     resultMessage.classList.add('screen-slide-up');
-    
-    setTimeout(() => {
-        resultMessage.classList.remove('screen-slide-up');
-    }, 500);
+    setTimeout(() => resultMessage.classList.remove('screen-slide-up'), 500);
 }
 
-// Очистить поле ввода
 function clearCipherInput() {
     if (cipherGameState.gameCompleted) return;
-    
     document.getElementById('cipherUserInput').value = '';
     cipherGameState.userInput = '';
     updateCipherProgress();
 }
 
-// Перезапустить игру с новой фразой
 function restartCipherGame() {
-    hideScreenWithAnimation(document.getElementById('cipherResultMessage')).then(() => {
-        initCipherGame();
-    });
+    hideScreenWithAnimation(document.getElementById('cipherResultMessage')).then(() => initCipherGame());
 }
 
-// Вернуться в музей из игры с шифром
 async function backFromCipher() {
     await hideScreenWithAnimation(document.getElementById('cipher-game-screen'));
     document.getElementById('cipherResultMessage').style.display = 'none';
     showPrologue();
 }
 
-// Запуск четвертого квеста (шифр)
-async function startCipherQuest() {
-    await Promise.all([
-        hideScreenWithAnimation(document.getElementById('ar-content-school')),
-        hideScreenWithAnimation(document.getElementById('game-screen')),
-        hideScreenWithAnimation(document.getElementById('ornament-game-screen'))
-    ].filter(p => p !== undefined));
+// ===== ФИНАЛЬНАЯ СЦЕНА =====
+async function startFinalQuest() {
+    const screensToHide = [
+        'ar-content-school', 'game-screen', 'ornament-game-screen', 
+        'cipher-game-screen', 'ar-scene-school', 'ar-scene-vase',
+        'ar-scene-ornament', 'ar-scene-cipher', 'winMessage',
+        'ornamentResultMessage', 'cipherResultMessage', 'prologue',
+        'ar-scene-face'
+    ];
     
-    document.getElementById('ar-scene-school').classList.add('hidden');
-    document.getElementById('ar-scene-vase').classList.add('hidden');
-    document.getElementById('ar-scene-ornament').classList.add('hidden');
-    document.getElementById('winMessage').style.display = 'none';
-    document.getElementById('ornamentResultMessage').style.display = 'none';
+    screensToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('hidden');
+            if (id.includes('Message')) el.style.display = 'none';
+        }
+    });
     
     if (currentARSystem) {
         currentARSystem.stop();
         currentARSystem = null;
     }
     
-    document.getElementById('ar-scene-cipher').classList.remove('hidden');
+    stopAllVideos();
     
-    const sceneEl = document.querySelector('#ar-scene-cipher a-scene');
-    
-    if (sceneEl.hasLoaded) {
-        initCipherAR(sceneEl);
-    } else {
-        sceneEl.addEventListener('loaded', function () {
-            initCipherAR(sceneEl);
-        });
+    const finalScreen = document.getElementById('final-game-screen');
+    if (finalScreen) {
+        finalScreen.classList.remove('hidden');
+        finalScreen.classList.add('screen-slide-up');
+        setTimeout(() => finalScreen.classList.remove('screen-slide-up'), 500);
     }
+    
+    loadSelfieGallery();
 }
 
-function initCipherAR(sceneEl) {
-    const arSystem = sceneEl.systems["mindar-image-system"];
-    currentARSystem = arSystem;
-    
-    arSystem.start();
-    
-    const target = document.getElementById('cipher-target');
-    let isGameStarted = false;
-    
-    target.addEventListener('targetFound', () => {
-        console.log('Cipher target found');
-        if (!isGameStarted) {
-            isGameStarted = true;
-            arSystem.stop();
-            currentARSystem = null;
-            document.getElementById('ar-scene-cipher').classList.add('hidden');
-            showCipherGame();
+function stopAllVideos() {
+    document.querySelectorAll('video').forEach(video => {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
         }
     });
 }
 
-function showCipherGame() {
-    const cipherScreen = document.getElementById('cipher-game-screen');
-    showScreenWithAnimation(cipherScreen);
-    initCipherGame();
+function backFromFinal() {
+    const finalScreen = document.getElementById('final-game-screen');
+    finalScreen.classList.add('screen-slide-down');
+    setTimeout(() => {
+        finalScreen.classList.add('hidden');
+        finalScreen.classList.remove('screen-slide-down');
+        showPrologue();
+    }, 400);
 }
 
-// ===== ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ ШИФРА =====
-document.addEventListener('DOMContentLoaded', function() {
-    // Добавляем обработчики для шифра с задержкой
+// ===== ФИНАЛЬНОЕ СЕЛФИ С FACE-API =====
+async function startFaceARSelfie() {
+    document.getElementById('final-game-screen').classList.add('hidden');
+    document.getElementById('ar-scene-face').classList.remove('hidden');
+    
+    await loadFaceApiModels();
+    await startFaceCamera();
+    initEffectCanvases();
+    startFaceApiDetection();
+    
+    document.getElementById('faceScanHint').style.display = 'block';
+    document.getElementById('faceDetectionProgress').style.display = 'block';
+    document.getElementById('faceControls').style.display = 'none';
+}
+
+async function loadFaceApiModels() {
+    try {
+        showFaceNotification('🔄 Загрузка моделей...', 2000);
+        await faceapi.nets.tinyFaceDetector.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
+        faceARState.modelsLoaded = true;
+    } catch (error) {
+        console.error('Ошибка загрузки моделей:', error);
+        showFaceNotification('❌ Ошибка загрузки', 3000);
+        startSimpleMode();
+    }
+}
+
+function startSimpleMode() {
+    faceARState.modelsLoaded = true;
+    setTimeout(() => onFaceDetected(), 3000);
+}
+
+async function startFaceCamera() {
+    const displayVideo = document.getElementById('faceDisplayVideo');
+    const detectionVideo = document.getElementById('faceDetectionVideo');
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+        
+        displayVideo.srcObject = stream;
+        detectionVideo.srcObject = stream;
+        await Promise.all([displayVideo.play(), detectionVideo.play()]);
+    } catch (error) {
+        console.error('Ошибка камеры:', error);
+        alert('Не удалось получить доступ к камере');
+    }
+}
+
+function initEffectCanvases() {
+    const effectsCanvas = document.getElementById('faceEffectsCanvas');
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    
+    const resizeCanvases = () => {
+        const video = document.getElementById('faceDisplayVideo');
+        if (video.videoWidth) {
+            effectsCanvas.width = video.videoWidth;
+            effectsCanvas.height = video.videoHeight;
+            confettiCanvas.width = video.videoWidth;
+            confettiCanvas.height = video.videoHeight;
+            
+            faceARState.canvasCtx = effectsCanvas.getContext('2d');
+            faceARState.confettiCtx = confettiCanvas.getContext('2d');
+        }
+    };
+    
+    window.addEventListener('resize', resizeCanvases);
+    setTimeout(resizeCanvases, 1000);
+}
+
+function startFaceApiDetection() {
+    const video = document.getElementById('faceDetectionVideo');
+    const progressBar = document.getElementById('faceProgressBar');
+    const faceCounter = document.getElementById('faceCounter');
+    const hintSubtext = document.querySelector('.hint-subtext');
+    
+    let detectionCount = 0;
+    
+    faceARState.detectionInterval = setInterval(async () => {
+        if (!faceARState.modelsLoaded || !video.videoWidth) return;
+        
+        try {
+            const detections = await faceapi.detectAllFaces(
+                video,
+                new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })
+            );
+            
+            faceARState.faceCount = detections.length;
+            faceCounter.innerHTML = `👤 ${detections.length} ${getFaceWord(detections.length)}`;
+            
+            if (detections.length > 0) {
+                detectionCount = Math.min(detectionCount + 1, 30);
+                progressBar.style.width = (detectionCount / 30 * 100) + '%';
+                
+                if (detectionCount >= 30 && !faceARState.faceDetected) {
+                    faceARState.faceDetected = true;
+                    onFaceDetected();
+                }
+                
+                const detection = detections[0];
+                const box = detection.box;
+                faceARState.facePosition = {
+                    x: video.videoWidth - box.x - box.width/2,
+                    y: box.y + box.height/2,
+                    width: box.width,
+                    height: box.height
+                };
+                
+                updateLogoPosition();
+                drawFaceBox(box);
+                
+                hintSubtext.textContent = '✅ Лицо обнаружено!';
+                hintSubtext.style.color = '#4a7c4a';
+            } else {
+                detectionCount = Math.max(detectionCount - 1, 0);
+                progressBar.style.width = (detectionCount / 30 * 100) + '%';
+                
+                faceARState.faceDetected = false;
+                document.getElementById('museumLogoFloat').style.opacity = '0.5';
+                
+                hintSubtext.textContent = '😊 Поместите лицо в кадр';
+                hintSubtext.style.color = '#a8d8ff';
+                
+                if (faceARState.canvasCtx) {
+                    faceARState.canvasCtx.clearRect(0, 0, video.videoWidth, video.videoHeight);
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка детекции:', error);
+        }
+    }, 100);
+}
+
+function updateLogoPosition() {
+    const logo = document.getElementById('museumLogoFloat');
+    const video = document.getElementById('faceDisplayVideo');
+    const pos = faceARState.facePosition;
+    
+    if (pos.width && video.videoWidth) {
+        logo.style.left = (pos.x / video.videoWidth * 100) + '%';
+        logo.style.top = ((pos.y / video.videoHeight * 100) - 15) + '%';
+        logo.style.opacity = faceARState.faceDetected ? '1' : '0.5';
+    }
+}
+
+function drawFaceBox(box) {
+    if (!faceARState.canvasCtx) return;
+    
+    const video = document.getElementById('faceDetectionVideo');
+    faceARState.canvasCtx.clearRect(0, 0, video.videoWidth, video.videoHeight);
+    
+    const x = video.videoWidth - box.x - box.width;
+    
+    faceARState.canvasCtx.strokeStyle = '#ffd700';
+    faceARState.canvasCtx.lineWidth = 3;
+    faceARState.canvasCtx.shadowColor = '#ffd700';
+    faceARState.canvasCtx.shadowBlur = 10;
+    faceARState.canvasCtx.strokeRect(x, box.y, box.width, box.height);
+}
+
+function onFaceDetected() {
+    document.getElementById('faceScanHint').style.display = 'none';
+    document.getElementById('faceDetectionProgress').style.display = 'none';
+    document.getElementById('faceControls').style.display = 'flex';
+    
+    faceARState.fireworksActive = true;
+    document.querySelector('.fireworks-container').classList.add('fireworks-active');
+    startConfetti();
+    showFaceNotification('🎆 Салют активирован!', 3000);
+}
+
+function toggleFireworks() {
+    faceARState.fireworksActive = !faceARState.fireworksActive;
+    const container = document.querySelector('.fireworks-container');
+    
+    if (faceARState.fireworksActive) {
+        container.classList.add('fireworks-active');
+        startConfetti();
+        showFaceNotification('🎆 Салют включен', 1500);
+    } else {
+        container.classList.remove('fireworks-active');
+        stopConfetti();
+        showFaceNotification('💤 Салют выключен', 1500);
+    }
+}
+
+function startConfetti() {
+    if (!faceARState.confettiCtx) return;
+    
+    const colors = ['#ffd700', '#ff3333', '#00d4ff', '#4a7c4a', '#ff9900'];
+    
+    for (let i = 0; i < 30; i++) {
+        faceARState.confettiParticles.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            vx: (Math.random() - 0.5) * 2,
+            vy: Math.random() * 2 + 1,
+            size: Math.random() * 5 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360
+        });
+    }
+    
+    function animateConfetti() {
+        if (!faceARState.fireworksActive) return;
+        
+        const ctx = faceARState.confettiCtx;
+        const video = document.getElementById('faceDisplayVideo');
+        
+        if (!ctx || !video.videoWidth) return;
+        
+        ctx.clearRect(0, 0, video.videoWidth, video.videoHeight);
+        
+        faceARState.confettiParticles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rotation += 1;
+            
+            if (p.y > video.videoHeight) {
+                p.y = -10;
+                p.x = Math.random() * video.videoWidth;
+            }
+            
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 5;
+            ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+            ctx.restore();
+        });
+        
+        requestAnimationFrame(animateConfetti);
+    }
+    
+    animateConfetti();
+}
+
+function stopConfetti() {
+    if (faceARState.confettiCtx) {
+        const video = document.getElementById('faceDisplayVideo');
+        if (video.videoWidth) {
+            faceARState.confettiCtx.clearRect(0, 0, video.videoWidth, video.videoHeight);
+        }
+    }
+    faceARState.confettiParticles = [];
+}
+
+function takeFacePhotoWithEffects() {
+    if (!faceARState.faceDetected) {
+        showFaceNotification('😊 Дождитесь обнаружения лица!', 2000);
+        return;
+    }
+    
+    const displayVideo = document.getElementById('faceDisplayVideo');
+    const canvas = document.createElement('canvas');
+    canvas.width = displayVideo.videoWidth;
+    canvas.height = displayVideo.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    ctx.font = 'bold 30px Arial';
+    ctx.fillStyle = '#ffd700';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'center';
+    ctx.strokeText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
+    ctx.fillText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
+    
+    for (let i = 0; i < 10; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const size = Math.random() * 20 + 10;
+        ctx.fillStyle = `hsl(${Math.random() * 60 + 40}, 100%, 50%)`;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    if (faceARState.facePosition.width) {
+        const pos = faceARState.facePosition;
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 5;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(pos.x - pos.width/2, pos.y - pos.height/2, pos.width, pos.height);
+    }
+    
+    const photoUrl = canvas.toDataURL('image/png');
+    saveFacePhoto(photoUrl);
+    flashEffect();
+    showFaceNotification('📸 Фото сохранено!', 2000);
+}
+
+function captureCelebrationSelfie() {
+    const video = document.getElementById('finalSelfieVideo');
+    if (!video || !video.videoWidth) {
+        showFaceNotification('❌ Камера не активна', 2000);
+        return;
+    }
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    ctx.font = 'bold 30px Arial';
+    ctx.fillStyle = '#ffd700';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'center';
+    ctx.strokeText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
+    ctx.fillText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
+    
+    const photoUrl = canvas.toDataURL('image/png');
+    saveFacePhoto(photoUrl);
+    flashEffect();
+    showFaceNotification('📸 Фото сохранено!', 2000);
+}
+
+function saveFacePhoto(photoUrl) {
+    if (faceARState.photos.length >= faceARState.maxPhotos) {
+        faceARState.photos.shift();
+    }
+    
+    faceARState.photos.push({
+        url: photoUrl,
+        date: new Date().toISOString(),
+        id: Date.now()
+    });
+    
+    localStorage.setItem('museum_face_selfies', JSON.stringify(faceARState.photos));
+    updateSelfieGallery();
+}
+
+function updateSelfieGallery() {
+    const gallery = document.getElementById('finalSelfieGalleryImages');
+    const container = document.getElementById('finalSelfieGallery');
+    if (!gallery || !container) return;
+    
+    if (faceARState.photos.length > 0) {
+        container.style.display = 'block';
+        gallery.innerHTML = '';
+        
+        faceARState.photos.slice().reverse().forEach(photo => {
+            const img = document.createElement('img');
+            img.src = photo.url;
+            img.className = 'final-gallery-image';
+            img.onclick = () => downloadFacePhoto(photo.url);
+            gallery.appendChild(img);
+        });
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+function downloadFacePhoto(url) {
+    const link = document.createElement('a');
+    link.download = `museum-selfie-${Date.now()}.png`;
+    link.href = url;
+    link.click();
+}
+
+function clearSelfieGallery() {
+    if (confirm('Очистить все фото?')) {
+        faceARState.photos = [];
+        localStorage.removeItem('museum_face_selfies');
+        updateSelfieGallery();
+    }
+}
+
+function loadSelfieGallery() {
+    const saved = localStorage.getItem('museum_face_selfies');
+    if (saved) {
+        try {
+            faceARState.photos = JSON.parse(saved);
+            updateSelfieGallery();
+        } catch (e) {
+            console.error('Error loading gallery', e);
+        }
+    }
+}
+
+function flashEffect() {
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:white;opacity:0.8;z-index:10000;pointer-events:none;';
+    document.body.appendChild(flash);
     setTimeout(() => {
-        const checkBtn = document.getElementById('cipherCheckBtn');
-        if (checkBtn) checkBtn.addEventListener('click', checkCipherPhrase);
+        flash.style.opacity = '0';
+        setTimeout(() => flash.remove(), 300);
+    }, 100);
+}
+
+function showFaceNotification(message, duration) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(44,62,80,0.95);
+        color: #ffd700;
+        padding: 15px 30px;
+        border-radius: 50px;
+        z-index: 10001;
+        font-size: 1rem;
+        border: 2px solid #ffd700;
+        backdrop-filter: blur(5px);
+        animation: notificationPop 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'notificationFade 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, duration);
+}
+
+function closeFaceAR() {
+    if (faceARState.detectionInterval) {
+        clearInterval(faceARState.detectionInterval);
+    }
+    
+    const displayVideo = document.getElementById('faceDisplayVideo');
+    const detectionVideo = document.getElementById('faceDetectionVideo');
+    
+    [displayVideo, detectionVideo].forEach(video => {
+        if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    });
+    
+    document.getElementById('ar-scene-face').classList.add('hidden');
+    document.getElementById('final-game-screen').classList.remove('hidden');
+    
+    faceARState.faceDetected = false;
+    faceARState.fireworksActive = false;
+    
+    updateSelfieGallery();
+}
+
+function backFromFinalSelfie() {
+    closeFaceAR();
+}
+
+function getFaceWord(count) {
+    if (count === 1) return 'лицо';
+    if (count >= 2 && count <= 4) return 'лица';
+    return 'лиц';
+}
+
+// ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+document.addEventListener('DOMContentLoaded', function() {
+    loadSelfieGallery();
+    
+    // Орнамент
+    setTimeout(() => {
+        const canvas = document.getElementById('ornamentGameCanvas');
+        if (canvas) {
+            canvas.addEventListener('click', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                handleOrnamentCellClick(getOrnamentCellIndex(x, y));
+            });
+            
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                canvas.dispatchEvent(new MouseEvent('click', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                }));
+            });
+        }
         
-        const clearBtn = document.getElementById('cipherClearBtn');
-        if (clearBtn) clearBtn.addEventListener('click', clearCipherInput);
+        document.getElementById('ornamentClearBtn')?.addEventListener('click', clearOrnamentGame);
+        document.getElementById('ornamentCheckBtn')?.addEventListener('click', () => showOrnamentResult(checkOrnamentPattern()));
+        document.getElementById('ornamentHintBtn')?.addEventListener('click', showOrnamentHint);
+        document.getElementById('ornamentBackBtn')?.addEventListener('click', backFromOrnament);
+        document.getElementById('ornamentRestartBtn')?.addEventListener('click', resetOrnamentGame);
+        document.getElementById('ornamentBackFromWinBtn')?.addEventListener('click', backFromOrnament);
+    }, 500);
+    
+    // Шифр
+    setTimeout(() => {
+        document.getElementById('cipherCheckBtn')?.addEventListener('click', checkCipherPhrase);
+        document.getElementById('cipherClearBtn')?.addEventListener('click', clearCipherInput);
+        document.getElementById('cipherHintBtn')?.addEventListener('click', () => showCipherHint(true));
+        document.getElementById('cipherBackBtn')?.addEventListener('click', backFromCipher);
+        document.getElementById('cipherRestartBtn')?.addEventListener('click', restartCipherGame);
+        document.getElementById('cipherBackFromWinBtn')?.addEventListener('click', backFromCipher);
         
-        const hintBtn = document.getElementById('cipherHintBtn');
-        if (hintBtn) hintBtn.addEventListener('click', () => showCipherHint(true));
-        
-        const backBtn = document.getElementById('cipherBackBtn');
-        if (backBtn) backBtn.addEventListener('click', backFromCipher);
-        
-        const restartBtn = document.getElementById('cipherRestartBtn');
-        if (restartBtn) restartBtn.addEventListener('click', restartCipherGame);
-        
-        const backFromWinBtn = document.getElementById('cipherBackFromWinBtn');
-        if (backFromWinBtn) backFromWinBtn.addEventListener('click', backFromCipher);
-        
-        // Обработчик ввода с клавиатуры
         const input = document.getElementById('cipherUserInput');
         if (input) {
             input.addEventListener('input', (e) => {
@@ -1398,15 +1641,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.target.value = cipherGameState.userInput;
                     return;
                 }
-                
-                // Ограничиваем длину
                 if (e.target.value.length > cipherGameState.currentPhrase.length) {
                     e.target.value = e.target.value.slice(0, cipherGameState.currentPhrase.length);
                 }
-                
-                // Приводим к нижнему регистру
                 e.target.value = e.target.value.toLowerCase().replace(/[^а-яё\s]/g, '');
-                
                 cipherGameState.userInput = e.target.value;
                 updateCipherProgress();
             });
@@ -1414,16 +1652,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
 });
 
-// Добавляем функции в глобальную область
-window.startCipherQuest = startCipherQuest;
-window.backFromCipher = backFromCipher;
-window.restartCipherGame = restartCipherGame;
+// Обработка изменения размера окна
+window.addEventListener('resize', () => {
+    if (!document.getElementById('ornament-game-screen').classList.contains('hidden')) {
+        clearTimeout(window.ornamentResizeTimeout);
+        window.ornamentResizeTimeout = setTimeout(() => {
+            ornamentGameState.canvasSize = getOrnamentCanvasSize();
+            const canvas = document.getElementById('ornamentGameCanvas');
+            canvas.width = ornamentGameState.canvasSize;
+            canvas.height = ornamentGameState.canvasSize;
+            ornamentGameState.cellSize = ornamentGameState.canvasSize / ornamentGameState.gridSize;
+            drawOrnamentGame();
+        }, 250);
+    }
+});
 
-// Экспортируем функции для вызова из HTML
+// Стили для уведомлений
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes notificationPop {
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    @keyframes notificationFade {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// Экспорт функций
 window.startFirstQuest = startFirstQuest;
 window.closeSchoolContent = closeSchoolContent;
 window.startVaseQuest = startVaseQuest;
 window.startOrnamentQuest = startOrnamentQuest;
+window.startCipherQuest = startCipherQuest;
+window.startFinalQuest = startFinalQuest;
+window.startFaceARSelfie = startFaceARSelfie;
+window.toggleFireworks = toggleFireworks;
+window.takeFacePhotoWithEffects = takeFacePhotoWithEffects;
+window.captureCelebrationSelfie = captureCelebrationSelfie;
+window.closeFaceAR = closeFaceAR;
+window.backFromFinal = backFromFinal;
+window.backFromFinalSelfie = backFromFinalSelfie;
+window.clearSelfieGallery = clearSelfieGallery;
 window.restartGame = restartGame;
 window.backToMuseum = backToMuseum;
 window.backFromOrnament = backFromOrnament;
+window.backFromCipher = backFromCipher;
+window.restartCipherGame = restartCipherGame;
