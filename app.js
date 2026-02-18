@@ -1,5 +1,6 @@
 // ===== ОБЩИЕ ПЕРЕМЕННЫЕ =====
 let currentARSystem = null;
+let mindarFaceScene = null;
 
 // ===== ИГРА С ВАЗОЙ =====
 const gameState = {
@@ -73,19 +74,12 @@ const cipherGameState = {
     gameCompleted: false
 };
 
-// ===== ФИНАЛЬНАЯ СЦЕНА =====
-const faceARState = {
-    faceDetected: false,
-    faceCount: 0,
-    facePosition: { x: 0, y: 0, width: 0, height: 0 },
-    fireworksActive: true,
-    modelsLoaded: false,
-    detectionInterval: null,
+// ===== MINDAR FACE СЦЕНА =====
+const mindarFaceState = {
+    faceTracked: false,
     photos: [],
     maxPhotos: 9,
-    canvasCtx: null,
-    confettiCtx: null,
-    confettiParticles: []
+    captureCanvas: null
 };
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
@@ -689,7 +683,7 @@ function initOrnamentGame() {
 function getOrnamentCanvasSize() {
     const isMobile = window.innerWidth <= 768;
     const maxSize = Math.min(window.innerWidth - 40, 500);
-    return isMobile ? Math.min(maxSize, 300) : 400;
+    return isMobile ? Math.min(maxSize, 350) : 400;
 }
 
 function drawOrnamentGame() {
@@ -1071,14 +1065,180 @@ async function backFromCipher() {
     showPrologue();
 }
 
-// ===== ФИНАЛЬНАЯ СЦЕНА =====
+// ===== MINDAR FACE ФИНАЛЬНАЯ СЦЕНА =====
+function startMindarFaceAR() {
+    // Скрываем меню
+    document.getElementById('final-game-screen').classList.add('hidden');
+    
+    // Показываем AR сцену с отслеживанием лица
+    const arScene = document.getElementById('ar-scene-face-mindar');
+    arScene.classList.remove('hidden');
+    
+    // Запускаем MindAR Face
+    const sceneEl = document.querySelector('#ar-scene-face-mindar a-scene');
+    
+    if (sceneEl.hasLoaded) {
+        initMindarFace(sceneEl);
+    } else {
+        sceneEl.addEventListener('loaded', () => initMindarFace(sceneEl));
+    }
+    
+    // Показываем подсказку
+    document.getElementById('mindarFaceHint').style.display = 'block';
+    document.getElementById('mindarFaceControls').style.display = 'none';
+    
+    // Обновляем статус
+    updateFaceStatus('searching', 'Поиск лица...');
+}
+
+function initMindarFace(sceneEl) {
+    const faceSystem = sceneEl.systems["mindar-face"];
+    mindarFaceScene = faceSystem;
+    
+    faceSystem.start();
+    
+    // Отслеживание статуса лица
+    const target = document.querySelector('[mindar-face-target]');
+    
+    target.addEventListener('targetFound', () => {
+        console.log('Face tracked!');
+        updateFaceStatus('tracked', 'Лицо найдено! 🎉');
+        
+        // Показываем кнопки
+        document.getElementById('mindarFaceHint').style.display = 'none';
+        document.getElementById('mindarFaceControls').style.display = 'flex';
+        
+        // Активируем анимации салюта
+        const fireworks = document.getElementById('fireworks-ar');
+        fireworks.setAttribute('animation', 'property: scale; to: 1.2 1.2 1.2; dur: 500; loop: true; dir: alternate');
+    });
+    
+    target.addEventListener('targetLost', () => {
+        console.log('Face lost');
+        updateFaceStatus('searching', 'Лицо потеряно...');
+        
+        document.getElementById('mindarFaceControls').style.display = 'none';
+        document.getElementById('mindarFaceHint').style.display = 'block';
+    });
+}
+
+function updateFaceStatus(status, text) {
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    
+    statusDot.className = 'status-dot ' + status;
+    statusText.textContent = text;
+}
+
+function captureMindarSelfie() {
+    // Получаем canvas из AR сцены
+    const canvas = document.querySelector('#ar-scene-face-mindar canvas');
+    if (!canvas) return;
+    
+    // Создаем копию canvas
+    const captureCanvas = document.createElement('canvas');
+    captureCanvas.width = canvas.width;
+    captureCanvas.height = canvas.height;
+    
+    const ctx = captureCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, 0);
+    
+    // Добавляем водяной знак
+    ctx.font = 'bold 30px Arial';
+    ctx.fillStyle = '#ffd700';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 4;
+    ctx.textAlign = 'center';
+    ctx.strokeText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', captureCanvas.width/2, 80);
+    ctx.fillText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', captureCanvas.width/2, 80);
+    
+    // Добавляем дату
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.textAlign = 'right';
+    ctx.fillText(new Date().toLocaleDateString(), captureCanvas.width - 20, captureCanvas.height - 20);
+    
+    const photoUrl = captureCanvas.toDataURL('image/png');
+    saveMindarPhoto(photoUrl);
+    
+    // Эффект вспышки
+    flashEffect();
+    
+    showNotification('📸 Фото сохранено!', 2000);
+}
+
+function saveMindarPhoto(photoUrl) {
+    if (mindarFaceState.photos.length >= mindarFaceState.maxPhotos) {
+        mindarFaceState.photos.shift();
+    }
+    
+    mindarFaceState.photos.push({
+        url: photoUrl,
+        date: new Date().toISOString(),
+        id: Date.now()
+    });
+    
+    localStorage.setItem('museum_mindar_photos', JSON.stringify(mindarFaceState.photos));
+    updateMindarGallery();
+}
+
+function updateMindarGallery() {
+    const gallery = document.getElementById('finalSelfieGalleryImages');
+    const container = document.getElementById('finalSelfieGallery');
+    
+    if (!gallery || !container) return;
+    
+    if (mindarFaceState.photos.length > 0) {
+        container.style.display = 'block';
+        gallery.innerHTML = '';
+        
+        mindarFaceState.photos.slice().reverse().forEach(photo => {
+            const img = document.createElement('img');
+            img.src = photo.url;
+            img.className = 'final-gallery-image';
+            img.onclick = () => downloadMindarPhoto(photo.url);
+            gallery.appendChild(img);
+        });
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+function downloadMindarPhoto(url) {
+    const link = document.createElement('a');
+    link.download = `museum-ar-${Date.now()}.png`;
+    link.href = url;
+    link.click();
+}
+
+function clearMindarGallery() {
+    if (confirm('Очистить все фото?')) {
+        mindarFaceState.photos = [];
+        localStorage.removeItem('museum_mindar_photos');
+        updateMindarGallery();
+    }
+}
+
+function closeMindarFace() {
+    if (mindarFaceScene) {
+        mindarFaceScene.stop();
+    }
+    
+    document.getElementById('ar-scene-face-mindar').classList.add('hidden');
+    document.getElementById('final-game-screen').classList.remove('hidden');
+    
+    // Сброс статуса
+    updateFaceStatus('searching', 'Ожидание лица...');
+}
+
+// ===== ФИНАЛЬНАЯ СЦЕНА (МЕНЮ) =====
 async function startFinalQuest() {
     const screensToHide = [
         'ar-content-school', 'game-screen', 'ornament-game-screen', 
         'cipher-game-screen', 'ar-scene-school', 'ar-scene-vase',
         'ar-scene-ornament', 'ar-scene-cipher', 'winMessage',
         'ornamentResultMessage', 'cipherResultMessage', 'prologue',
-        'ar-scene-face'
+        'ar-scene-face-mindar'
     ];
     
     screensToHide.forEach(id => {
@@ -1094,6 +1254,10 @@ async function startFinalQuest() {
         currentARSystem = null;
     }
     
+    if (mindarFaceScene) {
+        mindarFaceScene.stop();
+    }
+    
     stopAllVideos();
     
     const finalScreen = document.getElementById('final-game-screen');
@@ -1103,7 +1267,8 @@ async function startFinalQuest() {
         setTimeout(() => finalScreen.classList.remove('screen-slide-up'), 500);
     }
     
-    loadSelfieGallery();
+    // Загружаем сохраненные фото
+    loadMindarGallery();
 }
 
 function stopAllVideos() {
@@ -1125,412 +1290,42 @@ function backFromFinal() {
     }, 400);
 }
 
-// ===== ФИНАЛЬНОЕ СЕЛФИ С FACE-API =====
-async function startFaceARSelfie() {
-    document.getElementById('final-game-screen').classList.add('hidden');
-    document.getElementById('ar-scene-face').classList.remove('hidden');
-    
-    await loadFaceApiModels();
-    await startFaceCamera();
-    initEffectCanvases();
-    startFaceApiDetection();
-    
-    document.getElementById('faceScanHint').style.display = 'block';
-    document.getElementById('faceDetectionProgress').style.display = 'block';
-    document.getElementById('faceControls').style.display = 'none';
-}
-
-async function loadFaceApiModels() {
-    try {
-        showFaceNotification('🔄 Загрузка моделей...', 2000);
-        await faceapi.nets.tinyFaceDetector.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
-        faceARState.modelsLoaded = true;
-    } catch (error) {
-        console.error('Ошибка загрузки моделей:', error);
-        showFaceNotification('❌ Ошибка загрузки', 3000);
-        startSimpleMode();
-    }
-}
-
-function startSimpleMode() {
-    faceARState.modelsLoaded = true;
-    setTimeout(() => onFaceDetected(), 3000);
-}
-
-async function startFaceCamera() {
-    const displayVideo = document.getElementById('faceDisplayVideo');
-    const detectionVideo = document.getElementById('faceDetectionVideo');
-    
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-            audio: false
-        });
-        
-        displayVideo.srcObject = stream;
-        detectionVideo.srcObject = stream;
-        await Promise.all([displayVideo.play(), detectionVideo.play()]);
-    } catch (error) {
-        console.error('Ошибка камеры:', error);
-        alert('Не удалось получить доступ к камере');
-    }
-}
-
-function initEffectCanvases() {
-    const effectsCanvas = document.getElementById('faceEffectsCanvas');
-    const confettiCanvas = document.getElementById('confettiCanvas');
-    
-    const resizeCanvases = () => {
-        const video = document.getElementById('faceDisplayVideo');
-        if (video.videoWidth) {
-            effectsCanvas.width = video.videoWidth;
-            effectsCanvas.height = video.videoHeight;
-            confettiCanvas.width = video.videoWidth;
-            confettiCanvas.height = video.videoHeight;
-            
-            faceARState.canvasCtx = effectsCanvas.getContext('2d');
-            faceARState.confettiCtx = confettiCanvas.getContext('2d');
-        }
-    };
-    
-    window.addEventListener('resize', resizeCanvases);
-    setTimeout(resizeCanvases, 1000);
-}
-
-function startFaceApiDetection() {
-    const video = document.getElementById('faceDetectionVideo');
-    const progressBar = document.getElementById('faceProgressBar');
-    const faceCounter = document.getElementById('faceCounter');
-    const hintSubtext = document.querySelector('.hint-subtext');
-    
-    let detectionCount = 0;
-    
-    faceARState.detectionInterval = setInterval(async () => {
-        if (!faceARState.modelsLoaded || !video.videoWidth) return;
-        
-        try {
-            const detections = await faceapi.detectAllFaces(
-                video,
-                new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })
-            );
-            
-            faceARState.faceCount = detections.length;
-            faceCounter.innerHTML = `👤 ${detections.length} ${getFaceWord(detections.length)}`;
-            
-            if (detections.length > 0) {
-                detectionCount = Math.min(detectionCount + 1, 30);
-                progressBar.style.width = (detectionCount / 30 * 100) + '%';
-                
-                if (detectionCount >= 30 && !faceARState.faceDetected) {
-                    faceARState.faceDetected = true;
-                    onFaceDetected();
-                }
-                
-                const detection = detections[0];
-                const box = detection.box;
-                faceARState.facePosition = {
-                    x: video.videoWidth - box.x - box.width/2,
-                    y: box.y + box.height/2,
-                    width: box.width,
-                    height: box.height
-                };
-                
-                updateLogoPosition();
-                drawFaceBox(box);
-                
-                hintSubtext.textContent = '✅ Лицо обнаружено!';
-                hintSubtext.style.color = '#4a7c4a';
-            } else {
-                detectionCount = Math.max(detectionCount - 1, 0);
-                progressBar.style.width = (detectionCount / 30 * 100) + '%';
-                
-                faceARState.faceDetected = false;
-                document.getElementById('museumLogoFloat').style.opacity = '0.5';
-                
-                hintSubtext.textContent = '😊 Поместите лицо в кадр';
-                hintSubtext.style.color = '#a8d8ff';
-                
-                if (faceARState.canvasCtx) {
-                    faceARState.canvasCtx.clearRect(0, 0, video.videoWidth, video.videoHeight);
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка детекции:', error);
-        }
-    }, 100);
-}
-
-function updateLogoPosition() {
-    const logo = document.getElementById('museumLogoFloat');
-    const video = document.getElementById('faceDisplayVideo');
-    const pos = faceARState.facePosition;
-    
-    if (pos.width && video.videoWidth) {
-        logo.style.left = (pos.x / video.videoWidth * 100) + '%';
-        logo.style.top = ((pos.y / video.videoHeight * 100) - 15) + '%';
-        logo.style.opacity = faceARState.faceDetected ? '1' : '0.5';
-    }
-}
-
-function drawFaceBox(box) {
-    if (!faceARState.canvasCtx) return;
-    
-    const video = document.getElementById('faceDetectionVideo');
-    faceARState.canvasCtx.clearRect(0, 0, video.videoWidth, video.videoHeight);
-    
-    const x = video.videoWidth - box.x - box.width;
-    
-    faceARState.canvasCtx.strokeStyle = '#ffd700';
-    faceARState.canvasCtx.lineWidth = 3;
-    faceARState.canvasCtx.shadowColor = '#ffd700';
-    faceARState.canvasCtx.shadowBlur = 10;
-    faceARState.canvasCtx.strokeRect(x, box.y, box.width, box.height);
-}
-
-function onFaceDetected() {
-    document.getElementById('faceScanHint').style.display = 'none';
-    document.getElementById('faceDetectionProgress').style.display = 'none';
-    document.getElementById('faceControls').style.display = 'flex';
-    
-    faceARState.fireworksActive = true;
-    document.querySelector('.fireworks-container').classList.add('fireworks-active');
-    startConfetti();
-    showFaceNotification('🎆 Салют активирован!', 3000);
-}
-
-function toggleFireworks() {
-    faceARState.fireworksActive = !faceARState.fireworksActive;
-    const container = document.querySelector('.fireworks-container');
-    
-    if (faceARState.fireworksActive) {
-        container.classList.add('fireworks-active');
-        startConfetti();
-        showFaceNotification('🎆 Салют включен', 1500);
-    } else {
-        container.classList.remove('fireworks-active');
-        stopConfetti();
-        showFaceNotification('💤 Салют выключен', 1500);
-    }
-}
-
-function startConfetti() {
-    if (!faceARState.confettiCtx) return;
-    
-    const colors = ['#ffd700', '#ff3333', '#00d4ff', '#4a7c4a', '#ff9900'];
-    
-    for (let i = 0; i < 30; i++) {
-        faceARState.confettiParticles.push({
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            vx: (Math.random() - 0.5) * 2,
-            vy: Math.random() * 2 + 1,
-            size: Math.random() * 5 + 2,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            rotation: Math.random() * 360
-        });
-    }
-    
-    function animateConfetti() {
-        if (!faceARState.fireworksActive) return;
-        
-        const ctx = faceARState.confettiCtx;
-        const video = document.getElementById('faceDisplayVideo');
-        
-        if (!ctx || !video.videoWidth) return;
-        
-        ctx.clearRect(0, 0, video.videoWidth, video.videoHeight);
-        
-        faceARState.confettiParticles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.rotation += 1;
-            
-            if (p.y > video.videoHeight) {
-                p.y = -10;
-                p.x = Math.random() * video.videoWidth;
-            }
-            
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            ctx.rotate((p.rotation * Math.PI) / 180);
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color;
-            ctx.shadowBlur = 5;
-            ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
-            ctx.restore();
-        });
-        
-        requestAnimationFrame(animateConfetti);
-    }
-    
-    animateConfetti();
-}
-
-function stopConfetti() {
-    if (faceARState.confettiCtx) {
-        const video = document.getElementById('faceDisplayVideo');
-        if (video.videoWidth) {
-            faceARState.confettiCtx.clearRect(0, 0, video.videoWidth, video.videoHeight);
-        }
-    }
-    faceARState.confettiParticles = [];
-}
-
-function takeFacePhotoWithEffects() {
-    if (!faceARState.faceDetected) {
-        showFaceNotification('😊 Дождитесь обнаружения лица!', 2000);
-        return;
-    }
-    
-    const displayVideo = document.getElementById('faceDisplayVideo');
-    const canvas = document.createElement('canvas');
-    canvas.width = displayVideo.videoWidth;
-    canvas.height = displayVideo.videoHeight;
-    
-    const ctx = canvas.getContext('2d');
-    
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    
-    ctx.font = 'bold 30px Arial';
-    ctx.fillStyle = '#ffd700';
-    ctx.strokeStyle = '#2c3e50';
-    ctx.lineWidth = 3;
-    ctx.textAlign = 'center';
-    ctx.strokeText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
-    ctx.fillText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
-    
-    for (let i = 0; i < 10; i++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height;
-        const size = Math.random() * 20 + 10;
-        ctx.fillStyle = `hsl(${Math.random() * 60 + 40}, 100%, 50%)`;
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    if (faceARState.facePosition.width) {
-        const pos = faceARState.facePosition;
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 5;
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 15;
-        ctx.strokeRect(pos.x - pos.width/2, pos.y - pos.height/2, pos.width, pos.height);
-    }
-    
-    const photoUrl = canvas.toDataURL('image/png');
-    saveFacePhoto(photoUrl);
-    flashEffect();
-    showFaceNotification('📸 Фото сохранено!', 2000);
-}
-
-function captureCelebrationSelfie() {
-    const video = document.getElementById('finalSelfieVideo');
-    if (!video || !video.videoWidth) {
-        showFaceNotification('❌ Камера не активна', 2000);
-        return;
-    }
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    ctx.font = 'bold 30px Arial';
-    ctx.fillStyle = '#ffd700';
-    ctx.strokeStyle = '#2c3e50';
-    ctx.lineWidth = 3;
-    ctx.textAlign = 'center';
-    ctx.strokeText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
-    ctx.fillText('🏛️ ДОБРУШСКИЙ МУЗЕЙ', canvas.width/2, 80);
-    
-    const photoUrl = canvas.toDataURL('image/png');
-    saveFacePhoto(photoUrl);
-    flashEffect();
-    showFaceNotification('📸 Фото сохранено!', 2000);
-}
-
-function saveFacePhoto(photoUrl) {
-    if (faceARState.photos.length >= faceARState.maxPhotos) {
-        faceARState.photos.shift();
-    }
-    
-    faceARState.photos.push({
-        url: photoUrl,
-        date: new Date().toISOString(),
-        id: Date.now()
-    });
-    
-    localStorage.setItem('museum_face_selfies', JSON.stringify(faceARState.photos));
-    updateSelfieGallery();
-}
-
-function updateSelfieGallery() {
-    const gallery = document.getElementById('finalSelfieGalleryImages');
-    const container = document.getElementById('finalSelfieGallery');
-    if (!gallery || !container) return;
-    
-    if (faceARState.photos.length > 0) {
-        container.style.display = 'block';
-        gallery.innerHTML = '';
-        
-        faceARState.photos.slice().reverse().forEach(photo => {
-            const img = document.createElement('img');
-            img.src = photo.url;
-            img.className = 'final-gallery-image';
-            img.onclick = () => downloadFacePhoto(photo.url);
-            gallery.appendChild(img);
-        });
-    } else {
-        container.style.display = 'none';
-    }
-}
-
-function downloadFacePhoto(url) {
-    const link = document.createElement('a');
-    link.download = `museum-selfie-${Date.now()}.png`;
-    link.href = url;
-    link.click();
-}
-
-function clearSelfieGallery() {
-    if (confirm('Очистить все фото?')) {
-        faceARState.photos = [];
-        localStorage.removeItem('museum_face_selfies');
-        updateSelfieGallery();
-    }
-}
-
-function loadSelfieGallery() {
-    const saved = localStorage.getItem('museum_face_selfies');
+function loadMindarGallery() {
+    const saved = localStorage.getItem('museum_mindar_photos');
     if (saved) {
         try {
-            faceARState.photos = JSON.parse(saved);
-            updateSelfieGallery();
+            mindarFaceState.photos = JSON.parse(saved);
+            updateMindarGallery();
         } catch (e) {
             console.error('Error loading gallery', e);
         }
     }
 }
 
+// Вспомогательные функции
 function flashEffect() {
     const flash = document.createElement('div');
-    flash.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:white;opacity:0.8;z-index:10000;pointer-events:none;';
+    flash.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        opacity: 0.9;
+        z-index: 10000;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    `;
     document.body.appendChild(flash);
+    
     setTimeout(() => {
         flash.style.opacity = '0';
         setTimeout(() => flash.remove(), 300);
     }, 100);
 }
 
-function showFaceNotification(message, duration) {
+function showNotification(message, duration) {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -1539,12 +1334,13 @@ function showFaceNotification(message, duration) {
         transform: translate(-50%, -50%);
         background: rgba(44,62,80,0.95);
         color: #ffd700;
-        padding: 15px 30px;
-        border-radius: 50px;
+        padding: 20px 40px;
+        border-radius: 60px;
         z-index: 10001;
-        font-size: 1rem;
-        border: 2px solid #ffd700;
-        backdrop-filter: blur(5px);
+        font-size: 1.3rem;
+        border: 3px solid #ffd700;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px gold;
         animation: notificationPop 0.3s ease;
     `;
     notification.textContent = message;
@@ -1556,43 +1352,23 @@ function showFaceNotification(message, duration) {
     }, duration);
 }
 
-function closeFaceAR() {
-    if (faceARState.detectionInterval) {
-        clearInterval(faceARState.detectionInterval);
-    }
-    
-    const displayVideo = document.getElementById('faceDisplayVideo');
-    const detectionVideo = document.getElementById('faceDetectionVideo');
-    
-    [displayVideo, detectionVideo].forEach(video => {
-        if (video && video.srcObject) {
-            video.srcObject.getTracks().forEach(track => track.stop());
-            video.srcObject = null;
-        }
-    });
-    
-    document.getElementById('ar-scene-face').classList.add('hidden');
-    document.getElementById('final-game-screen').classList.remove('hidden');
-    
-    faceARState.faceDetected = false;
-    faceARState.fireworksActive = false;
-    
-    updateSelfieGallery();
-}
-
-function backFromFinalSelfie() {
-    closeFaceAR();
-}
-
-function getFaceWord(count) {
-    if (count === 1) return 'лицо';
-    if (count >= 2 && count <= 4) return 'лица';
-    return 'лиц';
-}
-
 // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
 document.addEventListener('DOMContentLoaded', function() {
-    loadSelfieGallery();
+    loadMindarGallery();
+    
+    // Добавляем стили для уведомлений
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes notificationPop {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        @keyframes notificationFade {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
     
     // Орнамент
     setTimeout(() => {
@@ -1667,20 +1443,6 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Стили для уведомлений
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes notificationPop {
-        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-    @keyframes notificationFade {
-        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
-
 // Экспорт функций
 window.startFirstQuest = startFirstQuest;
 window.closeSchoolContent = closeSchoolContent;
@@ -1688,16 +1450,13 @@ window.startVaseQuest = startVaseQuest;
 window.startOrnamentQuest = startOrnamentQuest;
 window.startCipherQuest = startCipherQuest;
 window.startFinalQuest = startFinalQuest;
-window.startFaceARSelfie = startFaceARSelfie;
-window.toggleFireworks = toggleFireworks;
-window.takeFacePhotoWithEffects = takeFacePhotoWithEffects;
-window.captureCelebrationSelfie = captureCelebrationSelfie;
-window.closeFaceAR = closeFaceAR;
-window.backFromFinal = backFromFinal;
-window.backFromFinalSelfie = backFromFinalSelfie;
-window.clearSelfieGallery = clearSelfieGallery;
+window.startMindarFaceAR = startMindarFaceAR;
+window.captureMindarSelfie = captureMindarSelfie;
+window.closeMindarFace = closeMindarFace;
+window.clearMindarGallery = clearMindarGallery;
 window.restartGame = restartGame;
 window.backToMuseum = backToMuseum;
 window.backFromOrnament = backFromOrnament;
 window.backFromCipher = backFromCipher;
 window.restartCipherGame = restartCipherGame;
+window.backFromFinal = backFromFinal;

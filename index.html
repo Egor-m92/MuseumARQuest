@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Museum ArQuest - Квест по музею</title>
     
+    <!-- A-Frame и MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    
+    <!-- MindAR Face Tracking (дополнительно) -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -95,6 +98,94 @@
         <div class="scan-hint">Наведите камеру на древний свиток с шифром</div>
     </div>
 
+    <!-- AR сцена для финального селфи с отслеживанием лица (MindAR Face) -->
+    <div id="ar-scene-face-mindar" class="ar-container hidden">
+        <a-scene mindar-face="autoStart: false;" 
+                 color-space="sRGB" 
+                 renderer="colorManagement: true" 
+                 vr-mode-ui="enabled: false" 
+                 device-orientation-permission-ui="enabled: false"
+                 embedded>
+            <a-camera active="false" position="0 0 0"></a-camera>
+            
+            <!-- Контент, привязанный к лицу -->
+            <a-entity mindar-face-target="faceIndex: 0">
+                <!-- Логотип музея над головой -->
+                <a-entity position="0 0.5 0" scale="0.8 0.8 0.8" id="museum-logo-ar">
+                    <a-plane color="#ffd700" width="1.2" height="0.4" opacity="0.9" position="0 0 0"></a-plane>
+                    <a-text value="🏛️ ДОБРУШСКИЙ МУЗЕЙ" color="#2c3e50" align="center" width="4" position="0 0 0.01"></a-text>
+                    <a-torus color="#ffd700" radius="0.8" radius-tubular="0.02" arc="360" position="0 0 -0.1"></a-torus>
+                </a-entity>
+                
+                <!-- Звезды салюта вокруг лица -->
+                <a-entity id="fireworks-ar">
+                    <!-- Левая звезда -->
+                    <a-entity position="-0.8 0.3 0" scale="0.3 0.3 0.3">
+                        <a-sphere color="#ff3333" radius="0.3" emissive="#ff0000"></a-sphere>
+                        <a-entity animation="property: position; to: -1 0.6 0; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
+                    </a-entity>
+                    
+                    <!-- Правая звезда -->
+                    <a-entity position="0.8 -0.2 0" scale="0.3 0.3 0.3">
+                        <a-sphere color="#00d4ff" radius="0.3" emissive="#00aaff"></a-sphere>
+                        <a-entity animation="property: position; to: 1 0.4 0; dur: 1200; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
+                    </a-entity>
+                    
+                    <!-- Верхняя звезда -->
+                    <a-entity position="0 0.8 0.2" scale="0.4 0.4 0.4">
+                        <a-sphere color="#ffd700" radius="0.3" emissive="#ffaa00"></a-sphere>
+                        <a-entity animation="property: position; to: 0 1.2 0.2; dur: 800; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
+                    </a-entity>
+                    
+                    <!-- Нижняя звезда -->
+                    <a-entity position="0 -0.8 -0.2" scale="0.3 0.3 0.3">
+                        <a-sphere color="#4a7c4a" radius="0.3" emissive="#2ecc71"></a-sphere>
+                        <a-entity animation="property: position; to: 0 -1.2 -0.2; dur: 900; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
+                    </a-entity>
+                    
+                    <!-- Парящие искры -->
+                    <a-entity rotation="0 0 0" animation="property: rotation; to: 0 360 0; dur: 3000; loop: true">
+                        <a-sphere color="#ffd700" radius="0.1" position="0.6 0 0"></a-sphere>
+                        <a-sphere color="#ff3333" radius="0.1" position="0 0.6 0"></a-sphere>
+                        <a-sphere color="#00d4ff" radius="0.1" position="-0.6 0 0"></a-sphere>
+                        <a-sphere color="#4a7c4a" radius="0.1" position="0 -0.6 0"></a-sphere>
+                    </a-entity>
+                </a-entity>
+                
+                <!-- Текст поздравления под лицом -->
+                <a-entity position="0 -0.8 0" scale="0.6 0.6 0.6">
+                    <a-plane color="#2c3e50" width="2" height="0.5" opacity="0.8" position="0 0 0"></a-plane>
+                    <a-text value="🎉 КВЕСТ ПРОЙДЕН! 🎉" color="#ffd700" align="center" width="3" position="0 0 0.01"></a-text>
+                </a-entity>
+            </a-entity>
+            
+            <!-- Частицы по всему экрану -->
+            <a-entity particle-system="preset: dust; color: #ffd700, #ff3333, #00d4ff; particleCount: 200; maxAge: 2; velocityY: 2;"></a-entity>
+        </a-scene>
+        
+        <!-- Инструкция -->
+        <div class="face-scan-hint" id="mindarFaceHint">
+            <div class="hint-text">😊 Поверните лицо к камере</div>
+            <div class="hint-subtext">Отслеживание лица...</div>
+        </div>
+        
+        <!-- Кнопки управления -->
+        <div class="face-controls" id="mindarFaceControls" style="display: none;">
+            <button class="face-btn face-btn-capture" onclick="captureMindarSelfie()">
+                📸 Сделать фото
+            </button>
+            <button class="face-btn face-btn-close" onclick="closeMindarFace()">
+                ✕ Завершить
+            </button>
+        </div>
+        
+        <!-- Индикатор статуса -->
+        <div class="face-status" id="mindarFaceStatus">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Ожидание лица...</span>
+        </div>
+    </div>
+
     <!-- AR контент школы -->
     <div id="ar-content-school" class="hidden">
         <div class="ar-content-wrapper">
@@ -125,7 +216,7 @@
                         <button class="btn-primary next-quest-btn" onclick="startVaseQuest()">🏺 Найти древнюю вазу</button>
                         <button class="btn-primary next-quest-btn" onclick="startOrnamentQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b0000 0%, #cc3333 100%);">🎨 Белорусский орнамент</button>
                         <button class="btn-primary next-quest-btn" onclick="startCipherQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">🔐 Расшифровать послание</button>
-                        <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 20px; background: linear-gradient(135deg, #ffd700 0%, #ff9900 100%); color: #2c3e50; font-weight: bold;">🏆 ФИНАЛ: Праздничный салют</button>
+                        <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 20px; background: linear-gradient(135deg, #ffd700 0%, #ff9900 100%); color: #2c3e50; font-weight: bold;">🏆 ФИНАЛ: Селфи с салютом</button>
                     </div>
                 </div>
             </div>
@@ -300,11 +391,11 @@
         </div>
     </div>
 
-    <!-- Экран финального селфи -->
+    <!-- Экран финального селфи (меню) -->
     <div id="final-game-screen" class="final-game-screen hidden">
         <div class="final-game-header">
             <h1>🎉 ФИНАЛЬНЫЙ САЛЮТ! 🎉</h1>
-            <p class="final-game-subtitle">Вы прошли все испытания! Сделайте праздничное селфи!</p>
+            <p class="final-game-subtitle">Вы прошли все испытания! Сделайте селфи с праздничным салютом!</p>
         </div>
         
         <div class="final-game-container">
@@ -314,72 +405,23 @@
                 <p>Вы заслужили праздничный салют!</p>
             </div>
             
-            <div class="final-selfie-preview" id="finalSelfiePreview">
-                <video id="finalSelfieVideo" autoplay playsinline muted></video>
-                <div class="final-selfie-overlay">
-                    <div class="final-selfie-frame">
-                        <div class="final-selfie-text">Скажи "СЫР"!</div>
-                    </div>
-                </div>
-            </div>
-            
             <div class="final-controls">
-                <button class="final-btn final-btn-primary" onclick="startFaceARSelfie()">🎆 Запустить салют</button>
-                <button class="final-btn final-btn-capture" onclick="captureCelebrationSelfie()">📸 Сделать фото</button>
-                <button class="final-btn final-btn-back" onclick="backFromFinal()">🏛️ В музей</button>
+                <button class="final-btn final-btn-primary" onclick="startMindarFaceAR()">
+                    🎆 ЗАПУСТИТЬ AR САЛЮТ
+                </button>
+                <button class="final-btn final-btn-back" onclick="backFromFinal()">
+                    🏛️ В МУЗЕЙ
+                </button>
             </div>
             
             <div class="final-selfie-gallery" id="finalSelfieGallery">
                 <h3>🎊 Ваши фото</h3>
                 <div class="final-gallery-images" id="finalSelfieGalleryImages"></div>
-                <button class="final-btn final-btn-clear" onclick="clearSelfieGallery()">Очистить</button>
+                <button class="final-btn final-btn-clear" onclick="clearMindarGallery()">ОЧИСТИТЬ</button>
             </div>
         </div>
     </div>
 
-    <!-- AR сцена для финального селфи с распознаванием лица -->
-    <div id="ar-scene-face" class="ar-container hidden">
-        <video id="faceDetectionVideo" autoplay playsinline muted style="display: none;"></video>
-        
-        <div class="face-video-container">
-            <video id="faceDisplayVideo" autoplay playsinline muted></video>
-            <canvas id="faceEffectsCanvas"></canvas>
-            
-            <div id="faceARContent" class="face-ar-content">
-                <div id="museumLogoFloat" class="museum-logo-float">
-                    <div class="museum-logo-text">🏛️ ДОБРУШСКИЙ МУЗЕЙ</div>
-                </div>
-                
-                <div id="fireworksContainer" class="fireworks-container">
-                    <div class="firework-star star1">⭐</div>
-                    <div class="firework-star star2">✨</div>
-                    <div class="firework-star star3">💫</div>
-                    <div class="firework-star star4">🌟</div>
-                    <div class="firework-star star5">🎆</div>
-                </div>
-                
-                <canvas id="confettiCanvas"></canvas>
-            </div>
-        </div>
-        
-        <div class="face-scan-hint" id="faceScanHint">
-            <div class="hint-text">😊 Посмотрите в камеру</div>
-            <div class="hint-subtext">Детекция лица...</div>
-        </div>
-        
-        <div class="face-detection-progress" id="faceDetectionProgress">
-            <div class="progress-bar-face" id="faceProgressBar"></div>
-        </div>
-        
-        <div class="face-controls" id="faceControls" style="display: none;">
-            <button class="face-btn face-btn-firework" onclick="toggleFireworks()">🎆 Вкл/Выкл салют</button>
-            <button class="face-btn face-btn-capture" onclick="takeFacePhotoWithEffects()">📸 Сделать фото</button>
-            <button class="face-btn face-btn-close" onclick="closeFaceAR()">✕ Завершить</button>
-        </div>
-        
-        <div class="face-counter" id="faceCounter">👤 0 лиц</div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
