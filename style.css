@@ -371,12 +371,12 @@ body {
     flex-direction: column;
     gap: 2rem;
 }
-
+/*  
 @media (min-width: 768px) {
     .ar-content-body {
         flex-direction: row;
     }
-}
+}*/
 
 .content-image {
     flex: 1;
