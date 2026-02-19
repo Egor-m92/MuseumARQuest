@@ -1556,16 +1556,7 @@ body {
     .hint-subtext {
         font-size: 0.9rem;
     }
-}
 
-/* Поддержка Safe Area */
-@supports (padding: max(0px)) {
-    .face-controls {
-        padding-bottom: max(20px, env(safe-area-inset-bottom));
-    }
-}
-
-@media (max-width: 640px) {
     .ornament-controls .ornament-btn {
         min-width: calc(50% - 10px);
         padding: 10px 12px;
@@ -1587,9 +1578,7 @@ body {
     .ornament-result-title {
         font-size: 1.7rem;
     }
-}
 
-@media (max-height: 600px) {
     .ornament-game-header {
         margin-bottom: 8px;
         padding-bottom: 5px;
@@ -1603,9 +1592,7 @@ body {
     .ornament-pattern-image-container {
         padding: 5px;
     }
-}
 
-@media (max-height: 600px) {
     .game-header h1 {
         font-size: 1.1rem;
     }
@@ -1625,14 +1612,19 @@ body {
     .vase-info {
         display: none;
     }
-}
 
-@media (max-width: 400px) {
     .fragments-panel {
         min-width: 120px;
     }
     
     .vase-panel {
         min-width: 180px;
+    }
+}
+
+/* Поддержка Safe Area */
+@supports (padding: max(0px)) {
+    .face-controls {
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
 }
