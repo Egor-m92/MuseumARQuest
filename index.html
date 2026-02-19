@@ -396,36 +396,122 @@
         </div>
     </div>
 
-    <!-- Экран финального селфи (меню) -->
-    <div id="final-game-screen" class="final-game-screen hidden">
-        <div class="final-game-header">
-            <h1>🎉 ФИНАЛЬНЫЙ САЛЮТ! 🎉</h1>
-            <p class="final-game-subtitle">Вы прошли все испытания! Сделайте селфи с праздничным салютом!</p>
-        </div>
+    <!-- Финальная AR сцена с отслеживанием лица (MindAR Face) -->
+<div id="ar-scene-face-mindar" class="ar-container hidden">
+    <a-scene mindar-face="autoStart: false;" 
+             color-space="sRGB" 
+             renderer="colorManagement: true" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false"
+             embedded>
+        <a-camera active="false" position="0 0 0"></a-camera>
         
-        <div class="final-game-container">
-            <div class="final-celebration">
-                <div class="final-trophy">🏆</div>
-                <h2>Поздравляем, герой!</h2>
-                <p>Вы заслужили праздничный салют!</p>
-            </div>
+        <!-- Контент, привязанный к лицу -->
+        <a-entity mindar-face-target="faceIndex: 0">
+            <!-- Логотип музея над головой -->
+            <a-entity position="0 0.5 0" scale="0.8 0.8 0.8">
+                <a-plane color="#ffd700" width="1.2" height="0.4" opacity="0.9" position="0 0 0"></a-plane>
+                <a-text value="🏛️ ДОБРУШСКИЙ МУЗЕЙ" color="#2c3e50" align="center" width="4" position="0 0 0.01"></a-text>
+                <a-torus color="#ffd700" radius="0.8" radius-tubular="0.02" arc="360" position="0 0 -0.1"></a-torus>
+            </a-entity>
             
-            <div class="final-controls">
-                <button class="final-btn final-btn-primary" onclick="startMindarFaceAR()">
-                    🎆 ЗАПУСТИТЬ AR САЛЮТ
-                </button>
-                <button class="final-btn final-btn-back" onclick="backFromFinal()">
-                    🏛️ В МУЗЕЙ
-                </button>
-            </div>
+            <!-- Звезды салюта вокруг лица -->
+            <a-entity>
+                <!-- Левая звезда -->
+                <a-entity position="-0.8 0.3 0" scale="0.3 0.3 0.3">
+                    <a-sphere color="#ff3333" radius="0.3" emissive="#ff0000"></a-sphere>
+                    <a-entity animation="property: position; to: -1 0.6 0; dur: 1000; loop: true; dir: alternate"></a-entity>
+                </a-entity>
+                
+                <!-- Правая звезда -->
+                <a-entity position="0.8 -0.2 0" scale="0.3 0.3 0.3">
+                    <a-sphere color="#00d4ff" radius="0.3" emissive="#00aaff"></a-sphere>
+                    <a-entity animation="property: position; to: 1 0.4 0; dur: 1200; loop: true; dir: alternate"></a-entity>
+                </a-entity>
+                
+                <!-- Верхняя звезда -->
+                <a-entity position="0 0.8 0.2" scale="0.4 0.4 0.4">
+                    <a-sphere color="#ffd700" radius="0.3" emissive="#ffaa00"></a-sphere>
+                    <a-entity animation="property: position; to: 0 1.2 0.2; dur: 800; loop: true; dir: alternate"></a-entity>
+                </a-entity>
+                
+                <!-- Нижняя звезда -->
+                <a-entity position="0 -0.8 -0.2" scale="0.3 0.3 0.3">
+                    <a-sphere color="#4a7c4a" radius="0.3" emissive="#2ecc71"></a-sphere>
+                    <a-entity animation="property: position; to: 0 -1.2 -0.2; dur: 900; loop: true; dir: alternate"></a-entity>
+                </a-entity>
+                
+                <!-- Парящие искры -->
+                <a-entity rotation="0 0 0" animation="property: rotation; to: 0 360 0; dur: 3000; loop: true">
+                    <a-sphere color="#ffd700" radius="0.1" position="0.6 0 0"></a-sphere>
+                    <a-sphere color="#ff3333" radius="0.1" position="0 0.6 0"></a-sphere>
+                    <a-sphere color="#00d4ff" radius="0.1" position="-0.6 0 0"></a-sphere>
+                    <a-sphere color="#4a7c4a" radius="0.1" position="0 -0.6 0"></a-sphere>
+                </a-entity>
+            </a-entity>
             
-            <div class="final-selfie-gallery" id="finalSelfieGallery">
-                <h3>🎊 Ваши фото</h3>
-                <div class="final-gallery-images" id="finalSelfieGalleryImages"></div>
-                <button class="final-btn final-btn-clear" onclick="clearMindarGallery()">ОЧИСТИТЬ</button>
+            <!-- Текст поздравления под лицом -->
+            <a-entity position="0 -0.8 0" scale="0.6 0.6 0.6">
+                <a-plane color="#2c3e50" width="2" height="0.5" opacity="0.8" position="0 0 0"></a-plane>
+                <a-text value="🎉 КВЕСТ ПРОЙДЕН! 🎉" color="#ffd700" align="center" width="3" position="0 0 0.01"></a-text>
+            </a-entity>
+        </a-entity>
+        
+        <!-- Частицы по всему экрану -->
+        <a-entity particle-system="preset: dust; color: #ffd700, #ff3333, #00d4ff; particleCount: 200; maxAge: 2; velocityY: 2;"></a-entity>
+    </a-scene>
+    
+    <!-- Инструкция -->
+    <div class="face-scan-hint" id="mindarFaceHint">
+        <div class="hint-text">😊 Поверните лицо к камере</div>
+        <div class="hint-subtext">Отслеживание лица...</div>
+    </div>
+    
+    <!-- Кнопки управления -->
+    <div class="face-controls" id="mindarFaceControls" style="display: none;">
+        <button class="face-btn face-btn-capture" onclick="captureMindarSelfie()">
+            📸 Сделать фото
+        </button>
+        <button class="face-btn face-btn-close" onclick="closeMindarFace()">
+            ✕ Завершить
+        </button>
+    </div>
+    
+    <!-- Индикатор статуса -->
+    <div class="face-status" id="mindarFaceStatus">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Ожидание лица...</span>
+    </div>
+</div>
+
+<!-- Экран финального селфи (меню) -->
+<div id="final-menu-screen" class="final-menu-screen hidden">
+    <div class="final-menu-header">
+        <h1>🎉 ФИНАЛЬНЫЙ САЛЮТ! 🎉</h1>
+        <p>Вы прошли все испытания! Сделайте селфи с праздничным салютом!</p>
+    </div>
+    
+    <div class="final-menu-container">
+        <div class="final-menu-content">
+            <div class="final-trophy">🏆</div>
+            <h2>Поздравляем, герой!</h2>
+            <p>Нажмите кнопку, чтобы запустить AR с отслеживанием лица</p>
+            
+            <button class="final-menu-btn final-menu-btn-primary" onclick="startMindarFaceAR()">
+                🎆 ЗАПУСТИТЬ AR САЛЮТ
+            </button>
+            <button class="final-menu-btn final-menu-btn-back" onclick="backFromFinalMenu()">
+                🏛️ В МУЗЕЙ
+            </button>
+            
+            <div class="final-menu-gallery" id="finalMenuGallery">
+                <h3>📸 Ваши фото</h3>
+                <div class="gallery-images" id="galleryImages"></div>
+                <button class="final-menu-btn final-menu-btn-clear" onclick="clearGallery()">ОЧИСТИТЬ</button>
             </div>
         </div>
     </div>
+</div>
 
     <script src="app.js"></script>
 </body>
