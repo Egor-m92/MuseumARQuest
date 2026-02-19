@@ -45,7 +45,11 @@
     <div id="ar-scene-school" class="ar-container hidden">
         <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
                  color-space="sRGB" 
-                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 renderer="antialias: false; 
+                            colorManagement: false; 
+                            highRefreshRate: false;
+                            physicallyCorrectLights: false;
+                            precision: mediump;"
                  vr-mode-ui="enabled: false" 
                  device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -58,7 +62,11 @@
     <div id="ar-scene-vase" class="ar-container hidden">
         <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
                  color-space="sRGB" 
-                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 renderer="antialias: false; 
+                            colorManagement: false; 
+                            highRefreshRate: false;
+                            physicallyCorrectLights: false;
+                            precision: mediump;" 
                  vr-mode-ui="enabled: false" 
                  device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -71,7 +79,11 @@
     <div id="ar-scene-ornament" class="ar-container hidden">
         <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
                  color-space="sRGB" 
-                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 renderer="antialias: false; 
+                            colorManagement: false; 
+                            highRefreshRate: false;
+                            physicallyCorrectLights: false;
+                            precision: mediump;" 
                  vr-mode-ui="enabled: false" 
                  device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -84,7 +96,11 @@
     <div id="ar-scene-cipher" class="ar-container hidden">
         <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
                  color-space="sRGB" 
-                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 renderer="antialias: false; 
+                            colorManagement: false; 
+                            highRefreshRate: false;
+                            physicallyCorrectLights: false;
+                            precision: mediump;" 
                  vr-mode-ui="enabled: false" 
                  device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -99,7 +115,12 @@
              mindar-face="autoStart: false;"
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false"
-             color-space="sRGB">
+             color-space="sRGB"
+             renderer="antialias: false; 
+                            colorManagement: false; 
+                            highRefreshRate: false;
+                            physicallyCorrectLights: false;
+                            precision: mediump;">
         
         <!-- Камера -->
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>

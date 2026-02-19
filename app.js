@@ -1,3 +1,22 @@
+// Добавьте в начало app.js
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// Ограничиваем разрешение камеры для мобильных
+if (isMobile) {
+    // Переопределяем getUserMedia для уменьшения разрешения
+    const originalGUM = navigator.mediaDevices.getUserMedia;
+    navigator.mediaDevices.getUserMedia = function(constraints) {
+        if (constraints.video) {
+            constraints.video = {
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
+                facingMode: 'environment'
+            };
+        }
+        return originalGUM.call(this, constraints);
+    };
+}
+
 // ===== ОБЩИЕ ПЕРЕМЕННЫЕ =====
 let currentARSystem = null;
 
@@ -1437,23 +1456,23 @@ async function startFinalQuest() {
     document.getElementById('cipherResultMessage')?.classList.add('hidden');
     document.getElementById('cipher-game-screen')?.classList.add('hidden');
     
-    // Останавливаем все предыдущие AR системы
-    if (currentARSystem) {
-        try {
-            currentARSystem.stop();
-        } catch (e) {
-            console.log('Ошибка при остановке предыдущей системы:', e);
-        }
-    }
-    
     // Показываем AR сцену
     const arPhoto = document.getElementById('ar-scene-photo');
     arPhoto.classList.remove('hidden');
     
-    // Даём время DOM обновиться
+    // Останавливаем предыдущую сессию если была
+    if (faceARSystem) {
+        try {
+            faceARSystem.stop();
+        } catch (e) {
+            console.log('Ошибка при остановке:', e);
+        }
+    }
+    
+    // Даем время на отрисовку
     setTimeout(() => {
         initFaceAR();
-    }, 500);
+    }, 1000);
 }
 
 // Инициализация Face AR
@@ -1476,86 +1495,53 @@ function initFaceAR() {
 }
 
 function setupFaceAR() {
-    console.log('Сцена загружена, настройка Face AR...');
+    console.log('Настройка Face AR...');
     
-    // Получаем систему MindAR
+    // Получаем систему
     faceARSystem = faceScene.systems['mindar-face-system'];
     
     if (!faceARSystem) {
         console.error('MindAR Face System не найдена!');
-        // Пробуем получить через компонент
-        setTimeout(() => {
-            faceARSystem = faceScene.systems['mindar-face-system'];
-            if (faceARSystem) {
-                startFaceTracking();
-            } else {
-                console.error('Не удалось получить доступ к MindAR Face System');
-            }
-        }, 1000);
+        console.log('Доступные системы:', Object.keys(faceScene.systems));
         return;
     }
     
-    startFaceTracking();
-}
-
-function startFaceTracking() {
-    console.log('Запуск Face AR...');
+    console.log('MindAR Face System найдена');
     
+    // Запускаем систему
     try {
-        // Запускаем систему
         faceARSystem.start();
-        console.log('Face AR запущен успешно');
+        console.log('Face AR запущен');
         
-        // Показываем кнопки управления
+        // Показываем кнопки
         document.getElementById('mindarFaceControls').style.display = 'flex';
         
-        // Настраиваем логотип
-        setupLogo();
-        
-        // Добавляем обработчик события обнаружения лица
-        faceScene.addEventListener('targetFound', (e) => {
-            console.log('Лицо обнаружено!', e);
-        });
-        
-        faceScene.addEventListener('targetLost', (e) => {
-            console.log('Лицо потеряно!', e);
-        });
+        // Проверяем логотип
+        checkLogo();
         
     } catch (e) {
-        console.error('Ошибка запуска Face AR:', e);
+        console.error('Ошибка запуска:', e);
     }
 }
 
-function setupLogo() {
-    console.log('Настройка логотипа...');
-    
-    // Проверяем оба варианта логотипа
-    const planeLogo = document.querySelector('#ar-scene-photo a-plane');
-    const imageLogo = document.querySelector('#ar-scene-photo a-image');
-    
-    if (planeLogo) {
-        console.log('Plane логотип найден');
-        // Убеждаемся что материал загружен
-        planeLogo.addEventListener('loaded', () => {
-            console.log('Plane логотип загружен');
-            planeLogo.setAttribute('visible', 'true');
-        });
+// Проверка логотипа
+function checkLogo() {
+    const logo = document.querySelector('#ar-scene-photo a-image');
+    if (logo) {
+        console.log('Логотип найден:', logo);
+        console.log('Позиция:', logo.getAttribute('position'));
+        console.log('Масштаб:', logo.getAttribute('scale'));
+        
+        // Принудительно делаем видимым
+        logo.setAttribute('visible', 'true');
+        logo.setAttribute('material', 'opacity: 1');
+    } else {
+        console.error('Логотип не найден!');
+        
+        // Пробуем найти через другой селектор
+        const allImages = document.querySelectorAll('a-image');
+        console.log('Все изображения:', allImages);
     }
-    
-    if (imageLogo) {
-        console.log('Image логотип найден');
-        imageLogo.addEventListener('loaded', () => {
-            console.log('Image логотип загружен');
-            imageLogo.setAttribute('visible', 'true');
-        });
-    }
-    
-    // Проверяем все anchor'ы
-    const anchors = document.querySelectorAll('[mindar-face-target]');
-    console.log('Найдено anchor-ов:', anchors.length);
-    anchors.forEach((anchor, i) => {
-        console.log(`Anchor ${i}:`, anchor.getAttribute('mindar-face-target'));
-    });
 }
 
 // Закрыть AR
@@ -1565,55 +1551,39 @@ function closeMindarFace() {
     if (faceARSystem) {
         try {
             faceARSystem.stop();
-            faceARSystem = null;
         } catch (e) {
             console.log('Ошибка при остановке:', e);
         }
     }
     
-    // Останавливаем видео поток
+    // Останавливаем видео
     const video = document.querySelector('#ar-scene-photo video');
     if (video && video.srcObject) {
         video.srcObject.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
     }
     
     document.getElementById('ar-scene-photo').classList.add('hidden');
     document.getElementById('mindarFaceControls').style.display = 'none';
-    
-    // Показываем пролог
     showPrologue();
 }
 
 // Сделать фото
 function captureMindarSelfie() {
     const videoEl = document.querySelector('#ar-scene-photo video');
-    const canvas = document.querySelector('#ar-scene-photo canvas');
-    
-    if (!videoEl || !canvas) {
+    if (!videoEl) {
         alert('Камера не готова');
         return;
     }
     
-    // Создаём временный canvas для снимка
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = videoEl.videoWidth || 640;
-    tempCanvas.height = videoEl.videoHeight || 480;
-    const ctx = tempCanvas.getContext('2d');
+    const canvas = document.createElement('canvas');
+    canvas.width = videoEl.videoWidth || 640;
+    canvas.height = videoEl.videoHeight || 480;
+    canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
     
-    // Рисуем видео кадр
-    ctx.drawImage(videoEl, 0, 0, tempCanvas.width, tempCanvas.height);
-    
-    // Рисуем 3D сцену поверх (если возможно)
-    // Примечание: Three.js рендер в A-Frame не всегда легко захватить
-    
-    // Скачиваем изображение
     const link = document.createElement('a');
-    link.download = 'museum-selfie-' + Date.now() + '.png';
-    link.href = tempCanvas.toDataURL('image/png');
+    link.download = 'museum-selfie.png';
+    link.href = canvas.toDataURL('image/png');
     link.click();
-    
-    console.log('Фото сохранено');
 }
 
 // ===== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ КНОПОК ШИФРА =====
