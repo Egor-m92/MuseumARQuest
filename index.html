@@ -7,6 +7,7 @@
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -79,6 +80,52 @@
         <div class="scan-hint">Наведите камеру на белорусский орнамент</div>
     </div>
 
+    <!-- AR сцена для четвертой метки (шифр) -->
+    <div id="ar-scene-cipher" class="ar-container hidden">
+        <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
+                 color-space="sRGB" 
+                 renderer="colorManagement: true, physicallyCorrectLights" 
+                 vr-mode-ui="enabled: false" 
+                 device-orientation-permission-ui="enabled: false">
+            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+            <a-entity id="cipher-target" mindar-image-target="targetIndex: 3"></a-entity>
+        </a-scene>
+        <div class="scan-hint">Наведите камеру на древний свиток с шифром</div>
+    </div>
+
+    <div id="ar-scene-photo" class="ar-container hidden">
+    <a-scene id="face-scene" 
+             mindar-face="autoStart: false;" 
+             embedded 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false"
+             color-space="sRGB">
+        
+        <!-- ВАЖНО: камера должна быть активна -->
+        <a-camera position="0 0 0"></a-camera>
+        
+        <!-- anchorIndex: 5 обычно лучше всего для размещения над головой -->
+        <a-entity mindar-face-target="anchorIndex: 5">
+            <a-image 
+                src="./assets/logo.png" 
+                position="0 0.5 0"
+                scale="0.5 0.5 0.5"
+                material="transparent: true; side: double;">
+            </a-image>
+        </a-entity>
+    </a-scene>
+</div>
+
+    <!-- Кнопки управления -->
+        <div class="face-controls" id="mindarFaceControls" style="display: none;">
+            <button class="face-btn face-btn-capture" onclick="captureMindarSelfie()">
+                📸 Сделать фото
+            </button>
+            <button class="face-btn face-btn-close" onclick="closeMindarFace()">
+                ✕ Завершить
+            </button>
+        </div>
+
     <!-- AR контент школы -->
     <div id="ar-content-school" class="hidden">
         <div class="ar-content-wrapper">
@@ -116,11 +163,14 @@
                     </div>
                     
                     <button class="btn-primary next-quest-btn" onclick="startVaseQuest()">
-                        🏺 Найти древнюю вазу
+                        Задание №1
                     </button>
-                    <button class="btn-primary next-quest-btn" onclick="startOrnamentQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b0000 0%, #cc3333 100%);">
-                        🎨 Белорусский орнамент
-                    </button>
+                    <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);">
+                    📸 Финальное селфи с персонажами
+                </button>
+                <button class="btn-primary next-quest-btn" onclick="startCipherQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                    Задание №3
+                </button>
                 </div>
             </div>
         </div>
@@ -184,8 +234,9 @@
         <h2>🏆 Ваза восстановлена!</h2>
         <p>Вы успешно собрали древнеславянскую вазу. Археологический артефакт сохранен для истории!</p>
         <p>Время: <span id="finalTime">00:00</span></p>
-        <button class="game-btn" onclick="restartGame()">Играть снова</button>
-        <button class="game-btn" onclick="backToMuseum()">Вернуться в музей</button>
+        <button class="btn-primary next-quest-btn" onclick="startOrnamentQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b0000 0%, #cc3333 100%);">
+            Задание №2
+        </button>
     </div>
     
     <!-- Экран игры с орнаментом -->
@@ -254,8 +305,82 @@
             <div class="ornament-result-title">Поздравляем!</div>
             <div class="ornament-result-details" id="ornamentResultDetails">Вы успешно повторили орнамент!</div>
             <div class="ornament-result-buttons">
-                <button id="ornamentRestartBtn" class="ornament-btn ornament-btn-success">Начать заново</button>
-                <button id="ornamentBackFromWinBtn" class="ornament-btn ornament-btn-back">Вернуться в музей</button>
+                <button class="btn-primary next-quest-btn" onclick="startCipherQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                    Задание №3
+                </button>
+            </div>
+        </div>
+    </div>
+
+     <!-- Экран игры с шифром -->
+    <div id="cipher-game-screen" class="cipher-game-screen hidden">
+        <div class="cipher-game-header">
+            <h1>🔐 Расшифруй послание предков</h1>
+            <p class="cipher-game-subtitle">Древний свиток содержит зашифрованную фразу. Используйте ключ, чтобы разгадать тайну!</p>
+        </div>
+        
+        <div class="cipher-game-container">
+            <div class="cipher-info-panel">
+                <div class="cipher-scroll">
+                    <div class="cipher-scroll-icon">📜</div>
+                    <h3>Древний свиток</h3>
+                    <div class="cipher-encoded" id="cipherEncoded">
+                        <!-- Здесь будет зашифрованная фраза -->
+                    </div>
+                    <div class="cipher-hint">
+                        <span class="cipher-hint-icon">💡</span>
+                        <span id="cipherHint">Каждая цифра соответствует букве в алфавите</span>
+                    </div>
+                </div>
+                
+                <div class="cipher-key">
+                    <h3>🔑 Ключ к шифру</h3>
+                    <div class="cipher-key-grid" id="cipherKey">
+                        <!-- Ключ будет сгенерирован динамически -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cipher-input-panel">
+                <h3>✍️ Ваш ответ</h3>
+                <input type="text" id="cipherUserInput" class="cipher-input" placeholder="Введите расшифрованную фразу..." maxlength="50">
+                
+                <div class="cipher-letters" id="cipherLetters">
+                    <!-- Буквы для ввода -->
+                </div>
+                
+                <div class="cipher-controls">
+                    <button id="cipherCheckBtn" class="cipher-btn cipher-btn-check">Проверить</button>
+                    <button id="cipherClearBtn" class="cipher-btn cipher-btn-clear">Очистить</button>
+                    <button id="cipherHintBtn" class="cipher-btn cipher-btn-hint">Подсказка</button>
+                    <button id="cipherBackBtn" class="cipher-btn cipher-btn-back">🏛️ В музей</button>
+                </div>
+                
+                <div class="cipher-progress">
+                    <div class="cipher-progress-text">
+                        <span>Прогресс: <span id="cipherProgress">0/0</span> букв</span>
+                    </div>
+                    <div class="cipher-progress-bar">
+                        <div class="cipher-progress-fill" id="cipherProgressFill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Сообщение о победе (шифр) -->
+    <div id="cipherResultMessage" class="cipher-result-message">
+        <div class="cipher-result-content">
+            <div class="cipher-result-title">🎉 Тайна раскрыта!</div>
+            <div class="cipher-result-details" id="cipherResultDetails">
+                Вы успешно расшифровали древнее послание!
+            </div>
+            <div class="cipher-result-phrase" id="cipherResultPhrase"></div>
+            <div class="cipher-result-buttons">
+                <button id="cipherRestartBtn" class="cipher-btn cipher-btn-success">Новое послание</button>
+                <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);">
+                    📸 Финальное селфи с персонажами
+                </button>
             </div>
         </div>
     </div>
