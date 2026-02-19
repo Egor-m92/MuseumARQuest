@@ -2,25 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Museum ArQuest - Квест по музею</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Museum ArQuest - Белорусский орнамент</title>
     
-    <!-- A-Frame и MindAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
-    <!-- MindAR Face Tracking -->
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
-    
-    <!-- ПОДКЛЮЧЕНИЕ СТИЛЕЙ (ЭТО БЫЛО ПРОПУЩЕНО) -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <!-- Загрузочный экран -->
     <div id="loader" class="loader-screen">
         <div class="loader-content">
             <div class="museum-logo">
-                <img class="logo" src="./assets/logo.png" alt="Логотип музея" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%23ffd700%22/><text x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%232c3e50%22>🏛️</text></svg>'">
+                <img class="logo" src="./assets/logo.png" alt="Логотип музея">
             </div>
             <h1>История в смартфоне</h1>
             <div class="loading-bar">
@@ -41,9 +37,6 @@
             <h2>Музейка</h2>
             <p id="prologue-text">Добро пожаловать в Добрушский районный краеведческий музей. Ты готов пройти квест? Если да, то нажми кнопку и дай разрешение на доступ к камере.</p>
             <button class="btn-primary" onclick="startFirstQuest()">Начать путешествие</button>
-            <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);">
-                📸 Финальное селфи с персонажами
-            </button>
         </div>
     </div>
 
@@ -53,12 +46,11 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false"
-                 embedded>
+                 device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="school-target" mindar-image-target="targetIndex: 0"></a-entity>
         </a-scene>
-        <div class="scan-hint">Наведите камеру на основательницу школы</div>
+        <div class="scan-hint">Наведите камеру на основательницу школы для детей рабочих фабрики</div>
     </div>
 
     <!-- AR сцена для второй метки (ваза) -->
@@ -67,8 +59,7 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false"
-                 embedded>
+                 device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="vase-target" mindar-image-target="targetIndex: 1"></a-entity>
         </a-scene>
@@ -81,114 +72,11 @@
                  color-space="sRGB" 
                  renderer="colorManagement: true, physicallyCorrectLights" 
                  vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false"
-                 embedded>
+                 device-orientation-permission-ui="enabled: false">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             <a-entity id="ornament-target" mindar-image-target="targetIndex: 2"></a-entity>
         </a-scene>
         <div class="scan-hint">Наведите камеру на белорусский орнамент</div>
-    </div>
-    
-    <!-- AR сцена для четвертой метки (шифр) -->
-    <div id="ar-scene-cipher" class="ar-container hidden">
-        <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false;" 
-                 color-space="sRGB" 
-                 renderer="colorManagement: true, physicallyCorrectLights" 
-                 vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false"
-                 embedded>
-            <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-            <a-entity id="cipher-target" mindar-image-target="targetIndex: 3"></a-entity>
-        </a-scene>
-        <div class="scan-hint">Наведите камеру на древний свиток</div>
-    </div>
-
-    <!-- AR сцена для финального селфи с отслеживанием лица -->
-    <div id="ar-scene-face-mindar" class="ar-container hidden">
-        <a-scene mindar-face="autoStart: false;" 
-                 color-space="sRGB" 
-                 renderer="colorManagement: true" 
-                 vr-mode-ui="enabled: false" 
-                 device-orientation-permission-ui="enabled: false"
-                 embedded>
-            <a-camera active="false" position="0 0 0"></a-camera>
-            
-            <!-- Контент, привязанный к лицу -->
-            <a-entity mindar-face-target="faceIndex: 0">
-                <!-- Логотип музея над головой -->
-                <a-entity position="0 0.5 0" scale="0.8 0.8 0.8" id="museum-logo-ar">
-                    <a-plane color="#ffd700" width="1.2" height="0.4" opacity="0.9" position="0 0 0"></a-plane>
-                    <a-text value="🏛️ ДОБРУШСКИЙ МУЗЕЙ" color="#2c3e50" align="center" width="4" position="0 0 0.01"></a-text>
-                    <a-torus color="#ffd700" radius="0.8" radius-tubular="0.02" arc="360" position="0 0 -0.1"></a-torus>
-                </a-entity>
-                
-                <!-- Звезды салюта вокруг лица -->
-                <a-entity id="fireworks-ar">
-                    <!-- Левая звезда -->
-                    <a-entity position="-0.8 0.3 0" scale="0.3 0.3 0.3">
-                        <a-sphere color="#ff3333" radius="0.3" emissive="#ff0000"></a-sphere>
-                        <a-entity animation="property: position; to: -1 0.6 0; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
-                    </a-entity>
-                    
-                    <!-- Правая звезда -->
-                    <a-entity position="0.8 -0.2 0" scale="0.3 0.3 0.3">
-                        <a-sphere color="#00d4ff" radius="0.3" emissive="#00aaff"></a-sphere>
-                        <a-entity animation="property: position; to: 1 0.4 0; dur: 1200; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
-                    </a-entity>
-                    
-                    <!-- Верхняя звезда -->
-                    <a-entity position="0 0.8 0.2" scale="0.4 0.4 0.4">
-                        <a-sphere color="#ffd700" radius="0.3" emissive="#ffaa00"></a-sphere>
-                        <a-entity animation="property: position; to: 0 1.2 0.2; dur: 800; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
-                    </a-entity>
-                    
-                    <!-- Нижняя звезда -->
-                    <a-entity position="0 -0.8 -0.2" scale="0.3 0.3 0.3">
-                        <a-sphere color="#4a7c4a" radius="0.3" emissive="#2ecc71"></a-sphere>
-                        <a-entity animation="property: position; to: 0 -1.2 -0.2; dur: 900; easing: easeInOutQuad; loop: true; dir: alternate"></a-entity>
-                    </a-entity>
-                    
-                    <!-- Парящие искры -->
-                    <a-entity rotation="0 0 0" animation="property: rotation; to: 0 360 0; dur: 3000; loop: true">
-                        <a-sphere color="#ffd700" radius="0.1" position="0.6 0 0"></a-sphere>
-                        <a-sphere color="#ff3333" radius="0.1" position="0 0.6 0"></a-sphere>
-                        <a-sphere color="#00d4ff" radius="0.1" position="-0.6 0 0"></a-sphere>
-                        <a-sphere color="#4a7c4a" radius="0.1" position="0 -0.6 0"></a-sphere>
-                    </a-entity>
-                </a-entity>
-                
-                <!-- Текст поздравления под лицом -->
-                <a-entity position="0 -0.8 0" scale="0.6 0.6 0.6">
-                    <a-plane color="#2c3e50" width="2" height="0.5" opacity="0.8" position="0 0 0"></a-plane>
-                    <a-text value="🎉 КВЕСТ ПРОЙДЕН! 🎉" color="#ffd700" align="center" width="3" position="0 0 0.01"></a-text>
-                </a-entity>
-            </a-entity>
-            
-            <!-- Частицы по всему экрану -->
-            <a-entity particle-system="preset: dust; color: #ffd700, #ff3333, #00d4ff; particleCount: 200; maxAge: 2; velocityY: 2;"></a-entity>
-        </a-scene>
-        
-        <!-- Инструкция -->
-        <div class="face-scan-hint" id="mindarFaceHint">
-            <div class="hint-text">😊 Поверните лицо к камере</div>
-            <div class="hint-subtext">Отслеживание лица...</div>
-        </div>
-        
-        <!-- Кнопки управления -->
-        <div class="face-controls" id="mindarFaceControls" style="display: none;">
-            <button class="face-btn face-btn-capture" onclick="captureMindarSelfie()">
-                📸 Сделать фото
-            </button>
-            <button class="face-btn face-btn-close" onclick="closeMindarFace()">
-                ✕ Завершить
-            </button>
-        </div>
-        
-        <!-- Индикатор статуса -->
-        <div class="face-status" id="mindarFaceStatus">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">Ожидание лица...</span>
-        </div>
     </div>
 
     <!-- AR контент школы -->
@@ -203,26 +91,36 @@
             
             <div class="ar-content-body">
                 <div class="content-image">
-                    <img src="assets/museum.jpg" alt="Историческое фото" onerror="this.src='https://via.placeholder.com/400x300/2c3e50/ffd700?text=Добрушский+музей'">
+                    <img src="assets/museum.jpg" alt="Историческое фото">
                     <div class="image-caption">Здание школы в наши дни</div>
                 </div>
                 
                 <div class="content-text">
                     <h3>Историческая справка</h3>
-                    <p>Школа была построена в 1909 году по инициативе княгини Ирины Паскевич. Здание выполнено в стиле модерн с элементами неоготики...</p>
+                    <p>Школа была построена в 1909 году по инициативе княгини Ирины Паскевич. 
+                    Здание выполнено в стиле модерн с элементами неоготики...</p>
                     
                     <div class="facts">
-                        <div class="fact-item"><span class="fact-icon">🏛️</span><span>Архитектор: Иван Семёнов</span></div>
-                        <div class="fact-item"><span class="fact-icon">👥</span><span>Вместимость: 200 учеников</span></div>
-                        <div class="fact-item"><span class="fact-icon">📚</span><span>Первые предметы: чтение, письмо, арифметика</span></div>
+                        <div class="fact-item">
+                            <span class="fact-icon">🏛️</span>
+                            <span>Архитектор: Иван Семёнов</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">👥</span>
+                            <span>Вместимость: 200 учеников</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">📚</span>
+                            <span>Первые предметы: чтение, письмо, арифметика</span>
+                        </div>
                     </div>
                     
-                    <div class="quest-buttons">
-                        <button class="btn-primary next-quest-btn" onclick="startVaseQuest()">🏺 Найти древнюю вазу</button>
-                        <button class="btn-primary next-quest-btn" onclick="startOrnamentQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b0000 0%, #cc3333 100%);">🎨 Белорусский орнамент</button>
-                        <button class="btn-primary next-quest-btn" onclick="startCipherQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">🔐 Расшифровать послание</button>
-                        <button class="btn-primary next-quest-btn" onclick="startFinalQuest()" style="margin-top: 20px; background: linear-gradient(135deg, #ffd700 0%, #ff9900 100%); color: #2c3e50; font-weight: bold;">🏆 ФИНАЛ: Селфи с салютом</button>
-                    </div>
+                    <button class="btn-primary next-quest-btn" onclick="startVaseQuest()">
+                        🏺 Найти древнюю вазу
+                    </button>
+                    <button class="btn-primary next-quest-btn" onclick="startOrnamentQuest()" style="margin-top: 10px; background: linear-gradient(135deg, #8b0000 0%, #cc3333 100%);">
+                        🎨 Белорусский орнамент
+                    </button>
                 </div>
             </div>
         </div>
@@ -232,95 +130,119 @@
     <div id="game-screen" class="game-screen hidden">
         <div class="game-header">
             <h1>Реставрация древнеславянской вазы</h1>
-            <p class="game-subtitle">Перетащите фрагменты керамики на контур вазы</p>
+            <p class="game-subtitle">Перетащите фрагменты керамики на контур вазы, чтобы восстановить исторический артефакт</p>
         </div>
 
         <div class="game-container">
             <div class="game-panel fragments-panel">
-                <h2 class="panel-title">🏺 Фрагменты</h2>
+                <h2 class="panel-title">🏺 Археологические фрагменты</h2>
                 <div class="fragments-area" id="fragmentsArea"></div>
-                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-                <p class="fragments-count">Собрано: <span id="piecesCount">0</span> / <span id="totalPieces">12</span></p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p style="text-align: center; margin-top: 10px; color: #d4b59e;">
+                    Собрано: <span id="piecesCount">0</span> / <span id="totalPieces">12</span>
+                </p>
             </div>
 
             <div class="game-panel vase-panel">
-                <h2 class="panel-title">🎯 Реставрация</h2>
+                <h2 class="panel-title">🎯 Зона реставрации</h2>
                 <div class="vase-area" id="vaseArea">
-                    <img id="vaseImage" src="./assets/vaza.jpg" alt="Vase outline" onerror="this.src='https://via.placeholder.com/200x300/c49a6c/ffffff?text=Ваза'">
+                    <img id="vaseImage" src="./assets/vaza.jpg" alt="Vase outline">
                 </div>
+
                 <div class="vase-info">
                     <div class="vase-name">Славянская керамическая урна X века</div>
-                    <div class="vase-desc">Глиняная урна с геометрическим орнаментом</div>
+                    <div class="vase-desc">Глиняная урна с геометрическим орнаментом, обнаруженная в кургане на территории Смоленской области. Датируется X веком н.э.</div>
                 </div>
             </div>
         </div>
 
         <div class="game-controls">
-            <button class="game-btn" onclick="restartGame()">🔄 Заново</button>
-            <button class="game-btn" onclick="backToMuseum()">🏛️ В музей</button>
+            <button class="game-btn" onclick="restartGame()">🔄 Начать заново</button>
+            <button class="game-btn" onclick="backToMuseum()">🏛️ Вернуться в музей</button>
         </div>
 
         <div class="stats-bar">
-            <div class="stat"><span class="stat-value" id="placedCount">0</span><span class="stat-label">Собрано</span></div>
-            <div class="stat"><span class="stat-value" id="timer">00:00</span><span class="stat-label">Время</span></div>
-            <div class="stat"><span class="stat-value" id="accuracy">0%</span><span class="stat-label">Точность</span></div>
+            <div class="stat">
+                <span class="stat-value" id="placedCount">0</span>
+                <span class="stat-label">Собрано фрагментов</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="timer">00:00</span>
+                <span class="stat-label">Время</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="accuracy">0%</span>
+                <span class="stat-label">Точность</span>
+            </div>
         </div>
     </div>
 
     <!-- Сообщение о победе (ваза) -->
     <div class="win-message" id="winMessage">
         <h2>🏆 Ваза восстановлена!</h2>
-        <p>Вы успешно собрали древнеславянскую вазу!</p>
+        <p>Вы успешно собрали древнеславянскую вазу. Археологический артефакт сохранен для истории!</p>
         <p>Время: <span id="finalTime">00:00</span></p>
-        <div class="win-buttons">
-            <button class="game-btn" onclick="restartGame()">Играть снова</button>
-            <button class="game-btn" onclick="backToMuseum()">В музей</button>
-            <button class="game-btn" onclick="startFinalQuest()" style="background: linear-gradient(135deg, #ffd700, #ff9900); color: #2c3e50;">🎉 К финалу</button>
-        </div>
+        <button class="game-btn" onclick="restartGame()">Играть снова</button>
+        <button class="game-btn" onclick="backToMuseum()">Вернуться в музей</button>
     </div>
     
     <!-- Экран игры с орнаментом -->
     <div id="ornament-game-screen" class="ornament-game-screen hidden">
         <div class="ornament-game-header">
             <h1>Белорусский орнамент</h1>
-            <p class="ornament-game-subtitle">Закрасьте квадраты, чтобы повторить узор</p>
+            <p class="ornament-game-subtitle">Закрасьте квадраты, чтобы повторить традиционный белорусский орнамент!</p>
         </div>
         
         <div class="ornament-game-container">
             <div class="ornament-pattern-section">
-                <h2 class="ornament-section-title">Образец</h2>
+                <h2 class="ornament-section-title">Образец орнамента</h2>
                 <div class="ornament-pattern-image-container">
-                    <img id="ornamentPatternImage" class="ornament-pattern-image" src="./assets/orname.jpg" alt="Белорусский орнамент" onerror="this.src='https://via.placeholder.com/200x200/ff3333/ffffff?text=Орнамент'">
+                    <img id="ornamentPatternImage" class="ornament-pattern-image" src="./assets/orname.jpg" alt="Белорусский орнамент">
                 </div>
                 <p class="ornament-pattern-caption">Традиционный белорусский узор</p>
             </div>
             
             <div class="ornament-draw-section">
-                <h2 class="ornament-section-title">Ваш орнамент</h2>
+                <h2 class="ornament-section-title">Закрасьте орнамент</h2>
                 <div class="ornament-canvas-wrapper">
                     <canvas id="ornamentGameCanvas"></canvas>
                 </div>
                 
                 <div class="ornament-tool-info">
                     <div class="ornament-tool-color"></div>
-                    <span>Нажмите на квадрат</span>
+                    <span>Нажмите на квадрат, чтобы закрасить/стереть</span>
+                </div>
+                
+                <div class="ornament-mobile-tip">
+                    💡 Нажимайте на квадраты, чтобы закрашивать или стирать их
                 </div>
                 
                 <div class="ornament-hint-info">
-                    Закрасьте красные квадраты, как на образце
+                    Закрасьте красные квадраты, чтобы повторить узор слева
                 </div>
                 
                 <div class="ornament-controls">
-                    <button id="ornamentClearBtn" class="ornament-btn ornament-btn-clear">Очистить</button>
+                    <button id="ornamentClearBtn" class="ornament-btn ornament-btn-clear">Очистить все</button>
                     <button id="ornamentCheckBtn" class="ornament-btn ornament-btn-check">Проверить</button>
                     <button id="ornamentHintBtn" class="ornament-btn ornament-btn-hint">Подсказка</button>
-                    <button id="ornamentBackBtn" class="ornament-btn ornament-btn-back">В музей</button>
+                    <button id="ornamentBackBtn" class="ornament-btn ornament-btn-back">🏛️ В музей</button>
                 </div>
                 
                 <div class="ornament-status-bar">
-                    <div class="ornament-status-item"><span class="ornament-status-label">Закрашено</span><span id="ornamentFilledCount" class="ornament-status-value">0</span></div>
-                    <div class="ornament-status-item"><span class="ornament-status-label">Нужно</span><span id="ornamentTotalCount" class="ornament-status-value">64</span></div>
-                    <div class="ornament-status-item"><span class="ornament-status-label">Статус</span><span id="ornamentStatusDisplay" class="ornament-status-value">В процессе</span></div>
+                    <div class="ornament-status-item">
+                        <span class="ornament-status-label">Закрашено</span>
+                        <span id="ornamentFilledCount" class="ornament-status-value">0</span>
+                    </div>
+                    <div class="ornament-status-item">
+                        <span class="ornament-status-label">Нужно</span>
+                        <span id="ornamentTotalCount" class="ornament-status-value">64</span>
+                    </div>
+                    <div class="ornament-status-item">
+                        <span class="ornament-status-label">Статус</span>
+                        <span id="ornamentStatusDisplay" class="ornament-status-value">В процессе</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -332,186 +254,11 @@
             <div class="ornament-result-title">Поздравляем!</div>
             <div class="ornament-result-details" id="ornamentResultDetails">Вы успешно повторили орнамент!</div>
             <div class="ornament-result-buttons">
-                <button id="ornamentRestartBtn" class="ornament-btn ornament-btn-success">Заново</button>
-                <button id="ornamentBackFromWinBtn" class="ornament-btn ornament-btn-back">В музей</button>
-                <button onclick="startFinalQuest()" class="ornament-btn" style="background: linear-gradient(135deg, #ffd700, #ff9900); color: #2c3e50;">🎉 ФИНАЛ</button>
+                <button id="ornamentRestartBtn" class="ornament-btn ornament-btn-success">Начать заново</button>
+                <button id="ornamentBackFromWinBtn" class="ornament-btn ornament-btn-back">Вернуться в музей</button>
             </div>
         </div>
     </div>
-    
-    <!-- Экран игры с шифром -->
-    <div id="cipher-game-screen" class="cipher-game-screen hidden">
-        <div class="cipher-game-header">
-            <h1>🔐 Расшифруй послание</h1>
-            <p class="cipher-game-subtitle">Используйте ключ, чтобы разгадать тайну</p>
-        </div>
-        
-        <div class="cipher-game-container">
-            <div class="cipher-info-panel">
-                <div class="cipher-scroll">
-                    <div class="cipher-scroll-icon">📜</div>
-                    <h3>Древний свиток</h3>
-                    <div class="cipher-encoded" id="cipherEncoded"></div>
-                    <div class="cipher-hint"><span class="cipher-hint-icon">💡</span><span id="cipherHint">Каждая цифра = буква</span></div>
-                </div>
-                
-                <div class="cipher-key">
-                    <h3>🔑 Ключ</h3>
-                    <div class="cipher-key-grid" id="cipherKey"></div>
-                </div>
-            </div>
-            
-            <div class="cipher-input-panel">
-                <h3>✍️ Ваш ответ</h3>
-                <input type="text" id="cipherUserInput" class="cipher-input" placeholder="Введите фразу..." maxlength="50">
-                
-                <div class="cipher-letters" id="cipherLetters"></div>
-                
-                <div class="cipher-controls">
-                    <button id="cipherCheckBtn" class="cipher-btn cipher-btn-check">Проверить</button>
-                    <button id="cipherClearBtn" class="cipher-btn cipher-btn-clear">Очистить</button>
-                    <button id="cipherHintBtn" class="cipher-btn cipher-btn-hint">Подсказка</button>
-                    <button id="cipherBackBtn" class="cipher-btn cipher-btn-back">В музей</button>
-                </div>
-                
-                <div class="cipher-progress">
-                    <div class="cipher-progress-text"><span>Прогресс: <span id="cipherProgress">0/0</span></span></div>
-                    <div class="cipher-progress-bar"><div class="cipher-progress-fill" id="cipherProgressFill"></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Сообщение о победе (шифр) -->
-    <div id="cipherResultMessage" class="cipher-result-message">
-        <div class="cipher-result-content">
-            <div class="cipher-result-title">🎉 Тайна раскрыта!</div>
-            <div class="cipher-result-details" id="cipherResultDetails">Вы успешно расшифровали послание!</div>
-            <div class="cipher-result-phrase" id="cipherResultPhrase"></div>
-            <div class="cipher-result-buttons">
-                <button id="cipherRestartBtn" class="cipher-btn cipher-btn-success">Новое</button>
-                <button id="cipherBackFromWinBtn" class="cipher-btn cipher-btn-back">В музей</button>
-                <button onclick="startFinalQuest()" class="cipher-btn" style="background: linear-gradient(135deg, #ffd700, #ff9900); color: #2c3e50;">🎆 ФИНАЛ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Финальная AR сцена с отслеживанием лица (MindAR Face) -->
-<div id="ar-scene-face-mindar" class="ar-container hidden">
-    <a-scene mindar-face="autoStart: false;" 
-             color-space="sRGB" 
-             renderer="colorManagement: true" 
-             vr-mode-ui="enabled: false" 
-             device-orientation-permission-ui="enabled: false"
-             embedded>
-        <a-camera active="false" position="0 0 0"></a-camera>
-        
-        <!-- Контент, привязанный к лицу -->
-        <a-entity mindar-face-target="faceIndex: 0">
-            <!-- Логотип музея над головой -->
-            <a-entity position="0 0.5 0" scale="0.8 0.8 0.8">
-                <a-plane color="#ffd700" width="1.2" height="0.4" opacity="0.9" position="0 0 0"></a-plane>
-                <a-text value="🏛️ ДОБРУШСКИЙ МУЗЕЙ" color="#2c3e50" align="center" width="4" position="0 0 0.01"></a-text>
-                <a-torus color="#ffd700" radius="0.8" radius-tubular="0.02" arc="360" position="0 0 -0.1"></a-torus>
-            </a-entity>
-            
-            <!-- Звезды салюта вокруг лица -->
-            <a-entity>
-                <!-- Левая звезда -->
-                <a-entity position="-0.8 0.3 0" scale="0.3 0.3 0.3">
-                    <a-sphere color="#ff3333" radius="0.3" emissive="#ff0000"></a-sphere>
-                    <a-entity animation="property: position; to: -1 0.6 0; dur: 1000; loop: true; dir: alternate"></a-entity>
-                </a-entity>
-                
-                <!-- Правая звезда -->
-                <a-entity position="0.8 -0.2 0" scale="0.3 0.3 0.3">
-                    <a-sphere color="#00d4ff" radius="0.3" emissive="#00aaff"></a-sphere>
-                    <a-entity animation="property: position; to: 1 0.4 0; dur: 1200; loop: true; dir: alternate"></a-entity>
-                </a-entity>
-                
-                <!-- Верхняя звезда -->
-                <a-entity position="0 0.8 0.2" scale="0.4 0.4 0.4">
-                    <a-sphere color="#ffd700" radius="0.3" emissive="#ffaa00"></a-sphere>
-                    <a-entity animation="property: position; to: 0 1.2 0.2; dur: 800; loop: true; dir: alternate"></a-entity>
-                </a-entity>
-                
-                <!-- Нижняя звезда -->
-                <a-entity position="0 -0.8 -0.2" scale="0.3 0.3 0.3">
-                    <a-sphere color="#4a7c4a" radius="0.3" emissive="#2ecc71"></a-sphere>
-                    <a-entity animation="property: position; to: 0 -1.2 -0.2; dur: 900; loop: true; dir: alternate"></a-entity>
-                </a-entity>
-                
-                <!-- Парящие искры -->
-                <a-entity rotation="0 0 0" animation="property: rotation; to: 0 360 0; dur: 3000; loop: true">
-                    <a-sphere color="#ffd700" radius="0.1" position="0.6 0 0"></a-sphere>
-                    <a-sphere color="#ff3333" radius="0.1" position="0 0.6 0"></a-sphere>
-                    <a-sphere color="#00d4ff" radius="0.1" position="-0.6 0 0"></a-sphere>
-                    <a-sphere color="#4a7c4a" radius="0.1" position="0 -0.6 0"></a-sphere>
-                </a-entity>
-            </a-entity>
-            
-            <!-- Текст поздравления под лицом -->
-            <a-entity position="0 -0.8 0" scale="0.6 0.6 0.6">
-                <a-plane color="#2c3e50" width="2" height="0.5" opacity="0.8" position="0 0 0"></a-plane>
-                <a-text value="🎉 КВЕСТ ПРОЙДЕН! 🎉" color="#ffd700" align="center" width="3" position="0 0 0.01"></a-text>
-            </a-entity>
-        </a-entity>
-        
-        <!-- Частицы по всему экрану -->
-        <a-entity particle-system="preset: dust; color: #ffd700, #ff3333, #00d4ff; particleCount: 200; maxAge: 2; velocityY: 2;"></a-entity>
-    </a-scene>
-    
-    <!-- Инструкция -->
-    <div class="face-scan-hint" id="mindarFaceHint">
-        <div class="hint-text">😊 Поверните лицо к камере</div>
-        <div class="hint-subtext">Отслеживание лица...</div>
-    </div>
-    
-    <!-- Кнопки управления -->
-    <div class="face-controls" id="mindarFaceControls" style="display: none;">
-        <button class="face-btn face-btn-capture" onclick="captureMindarSelfie()">
-            📸 Сделать фото
-        </button>
-        <button class="face-btn face-btn-close" onclick="closeMindarFace()">
-            ✕ Завершить
-        </button>
-    </div>
-    
-    <!-- Индикатор статуса -->
-    <div class="face-status" id="mindarFaceStatus">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">Ожидание лица...</span>
-    </div>
-</div>
-
-<!-- Экран финального селфи (меню) -->
-<div id="final-menu-screen" class="final-menu-screen hidden">
-    <div class="final-menu-header">
-        <h1>🎉 ФИНАЛЬНЫЙ САЛЮТ! 🎉</h1>
-        <p>Вы прошли все испытания! Сделайте селфи с праздничным салютом!</p>
-    </div>
-    
-    <div class="final-menu-container">
-        <div class="final-menu-content">
-            <div class="final-trophy">🏆</div>
-            <h2>Поздравляем, герой!</h2>
-            <p>Нажмите кнопку, чтобы запустить AR с отслеживанием лица</p>
-            
-            <button class="final-menu-btn final-menu-btn-primary" onclick="startMindarFaceAR()">
-                🎆 ЗАПУСТИТЬ AR САЛЮТ
-            </button>
-            <button class="final-menu-btn final-menu-btn-back" onclick="backFromFinalMenu()">
-                🏛️ В МУЗЕЙ
-            </button>
-            
-            <div class="final-menu-gallery" id="finalMenuGallery">
-                <h3>📸 Ваши фото</h3>
-                <div class="gallery-images" id="galleryImages"></div>
-                <button class="final-menu-btn final-menu-btn-clear" onclick="clearGallery()">ОЧИСТИТЬ</button>
-            </div>
-        </div>
-    </div>
-</div>
 
     <script src="app.js"></script>
 </body>
